@@ -1,0 +1,14 @@
+{
+  "name": "playingbot",
+  "version": "0.0.0",
+  "description": "Discord bot that assigns roles to people who are playing a game, so they sort higher in the users list",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Mimickal",
+  "license": "AGPL-3.0",
+  "dependencies": {
+    "discord.js": "^12.5.1"
+  }
+}

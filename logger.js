@@ -24,14 +24,14 @@ let logFormat = Winston.format.combine(
 logger.add(new Winston.transports.File({
 	filename: LOG_FILE_NAME,
 	format: logFormat,
-	level: 'info',
+	level: IS_PROD ? 'info' : 'debug',
 }));
 logger.add(new Winston.transports.Console({
 	format: Winston.format.combine(
 		Winston.format.colorize(),
 		logFormat,
 	),
-	level: IS_PROD ? 'error' : 'info',
+	level: IS_PROD ? 'error' : 'debug',
 }));
 
 

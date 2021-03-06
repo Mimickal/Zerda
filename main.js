@@ -9,6 +9,8 @@
 const fs = require('fs');
 const Discord = require('discord.js');
 
+const logger = require('./logger.js');
+
 // TODO temporary easy stuff for testing.
 const TOKEN = fs.readFileSync(process.argv[2]).toString().trim();
 const CONFIG = require('./config.json');
@@ -33,14 +35,14 @@ client.on(Events.PRESENCE_UPDATE, onPresenceUpdate);
 // TODO also, alerting for when we log an error
 
 client.login(TOKEN).catch(err => {
-	console.error(err);
+	logger.error(err.stack);
 	process.exit(1);
 });
 
 
 /// Events.CLIENT_READY event handler
 function onReady() {
-	console.log(`Logged in as ${client.user.tag}`);
+	logger.info(`Logged in as ${client.user.tag} (${client.user.id})`);
 
 	assignRolesAll();
 }
@@ -61,7 +63,9 @@ async function assignRolesAll() {
 	let guild = await client.guilds.fetch(CONFIG.server_id);
 	let members = await guild.members.fetch();
 
+	logger.info("Beginning initial member check...");
 	members.each(member => {
+		logger.debug(`Checking ${detail(member)}`);
 		assignRolesFromPresence(member.presence, true);
 	});
 }
@@ -94,11 +98,14 @@ function assignRolesFromPresence(presence, nocache) {
  */
 async function addRole(presence) {
 	let userID = presence.userID;
-	let user = await presence.guild.members.fetch(userID);
+	let member = await presence.guild.members.fetch(userID);
 
-	await user.roles.add(CONFIG.halo_role_id);
+	await member.roles.add(CONFIG.halo_role_id);
 
-	player_map.set(userID, user);
+	if (!member.roles.cache.has(CONFIG.halo_role_id)) {
+		logger.info(`Assigned role ${CONFIG.halo_role_id} to ${detail(member)}`);
+	}
+	player_map.set(userID, member);
 }
 
 /**
@@ -113,13 +120,30 @@ async function addRole(presence) {
  */
 async function removeRole(presence, nocache) {
 	let userID = presence.userID;
-	let user = player_map.get(userID);
+	let member = player_map.get(userID);
 
 	if (nocache) {
-		user = await presence.guild.members.fetch(userID);
+		member = await presence.guild.members.fetch(userID);
 	}
 
-	await user.roles.remove(CONFIG.halo_role_id);
+	await member.roles.remove(CONFIG.halo_role_id);
 
+	if (member.roles.cache.has(CONFIG.halo_role_id)) {
+		logger.info(`Removed role ${CONFIG.halo_role_id} from ${detail(member)}`);
+	}
 	player_map.delete(userID);
+}
+
+/**
+ * Given a GuildMember, returns a string describing their name, ID, and which
+ * guild they're in. This is helpful for logging for tracing production issues.
+ */
+function detail(member) {
+	// Should never happen, but let's handle this case anyway.
+	if (!member) {
+		return "[undefined]";
+	}
+
+	return `"${member.user.tag}" (${member.user.id}) ` +
+		`in "${member.guild.name}" (${member.guild.id})`;
 }

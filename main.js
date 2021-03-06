@@ -16,7 +16,6 @@ const TOKEN = fs.readFileSync(process.argv[2]).toString().trim();
 const CONFIG = require('./config.json');
 
 // TODO handle sharding if we want this in multiple servers
-/// The Discord bot client.
 const client = new Discord.Client();
 
 /**
@@ -25,10 +24,13 @@ const client = new Discord.Client();
  */
 const player_map = new Map();
 
+// Set up the Discord client
 // TODO on guild join, create the halo role if it doesn't exist
 const Events = Discord.Constants.Events;
 client.on(Events.CLIENT_READY, onReady);
 client.on(Events.PRESENCE_UPDATE, onPresenceUpdate);
+client.on(Events.GUILD_CREATE, onGuildJoin);
+client.on(Events.GUILD_DELETE, onGuildLeave);
 
 
 // TODO we need legit logging
@@ -54,6 +56,17 @@ function onPresenceUpdate(old_presence, new_presence) {
 
 // TODO error checking for all this stuff
 // TODO check for permissions and API failures
+/// Events.GUILD_CREATE event handler
+function onGuildJoin(guild) {
+	logger.info(`Joined guild "${guild.name}" (${guild.id}) with permissions ${
+		guild.member(client.user.id).permissions.bitfield
+	}`);
+}
+
+/// Events.GUILD_DELETE event handler
+function onGuildLeave(guild) {
+	logger.info(`Left guild "${guild.name}" (${guild.id})`);
+}
 
 /**
  * Applies assignRolesFromPresence to every guild member this bot can see.

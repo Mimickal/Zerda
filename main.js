@@ -69,18 +69,32 @@ function onGuildLeave(guild) {
 }
 
 /**
- * Applies assignRolesFromPresence to every guild member this bot can see.
+ * Applies assignRolesFromPresence to every guild member this bot can see,
+ * across all guilds.
  * This also effectively builds out the live cache of players.
  */
 async function assignRolesAll() {
-	let guild = await client.guilds.fetch(CONFIG.server_id);
-	let members = await guild.members.fetch();
-
 	logger.info("Beginning initial member check...");
-	members.each(member => {
-		logger.debug(`Checking ${detail(member)}`);
-		assignRolesFromPresence(member.presence, true);
-	});
+	let guildCount = 0;
+	let memberCount = 0;
+
+	for await (let guild of client.guilds.cache.values()) {
+		// TODO how will we handle more than 1000 users? Do we need a special
+		// API permission for this?
+		let members = await guild.members.fetch();
+
+		guildCount++;
+		memberCount += members.size;
+
+		await Promise.all(members.map(member => {
+			logger.debug(`Checking ${detail(member)}`);
+			return assignRolesFromPresence(member.presence, true);
+		}));
+	}
+
+
+	logger.info("Finished initial member check. " +
+		`Checked ${memberCount} members across ${guildCount} guilds`);
 }
 
 /**
@@ -90,14 +104,14 @@ async function assignRolesAll() {
  * @param presence  A GuildMember's Discord.js Presence object.
  * @param nocache   Passed through to <code>removeRole</code>.
  */
-function assignRolesFromPresence(presence, nocache) {
+async function assignRolesFromPresence(presence, nocache) {
 	if (presence.activities.find(activity =>
 		activity.applicationID === CONFIG.halo_app_id
 	)) {
-		addRole(presence);
+		await addRole(presence);
 	}
 	else if (nocache || player_map.has(presence.userID)) {
-		removeRole(presence, nocache);
+		await removeRole(presence, nocache);
 	}
 }
 

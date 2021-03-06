@@ -14,6 +14,7 @@ const logger = require('./logger.js');
 // TODO temporary easy stuff for testing.
 const TOKEN = fs.readFileSync(process.argv[2]).toString().trim();
 const CONFIG = require('./config.json');
+const ROLE_NAME = 'Currently Playing';
 
 // TODO handle sharding if we want this in multiple servers
 const client = new Discord.Client();
@@ -43,10 +44,11 @@ client.login(TOKEN).catch(err => {
 
 
 /// Events.CLIENT_READY event handler
-function onReady() {
+async function onReady() {
 	logger.info(`Logged in as ${client.user.tag} (${client.user.id})`);
 
-	assignRolesAll();
+	await createRoleAll();
+	await assignRolesAll();
 }
 
 /// Events.PRESENCE_UPDATE event handler
@@ -61,11 +63,52 @@ function onGuildJoin(guild) {
 	logger.info(`Joined guild "${guild.name}" (${guild.id}) with permissions ${
 		guild.member(client.user.id).permissions.bitfield
 	}`);
+
+	createPlayingRole(guild);
 }
 
 /// Events.GUILD_DELETE event handler
 function onGuildLeave(guild) {
 	logger.info(`Left guild "${guild.name}" (${guild.id})`);
+}
+
+/**
+ * Applies createPlayingRole to every guild this bot can see.
+ */
+async function createRoleAll() {
+	logger.info(`Checking all guilds for "${ROLE_NAME}" role...`);
+	for await (let guild of client.guilds.cache.values()) {
+		await createPlayingRole(guild);
+	}
+}
+
+/**
+ * Creates the "Now Playing" role in the given Guild, if it doesn't already
+ * exist.
+ *
+ * @param guild  A Discord.js Guild object.
+ */
+async function createPlayingRole(guild) {
+	let role = guild.roles.cache.find(role => role.name === ROLE_NAME);
+	if (role) {
+		logger.debug(
+			`Guild ${guild.name} (${guild.id}) already has role ${role.id}`
+		);
+		return;
+	}
+
+	role = await guild.roles.create({
+		data: {
+			hoist: true, // VERY IMPORTANT! This bot doesn't work without this!
+			mentionable: true,
+			name: ROLE_NAME,
+			permissions: 0,
+			position: 0, // TODO mention in readme that people will want to reorder this
+		},
+		reason: 'Role for people currently playing',
+	});
+
+	logger.info(`Created role ${role.id} in guild "${guild.name}" (${guild.id})`);
 }
 
 /**

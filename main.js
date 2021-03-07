@@ -89,7 +89,7 @@ async function createRoleAll() {
  * @param guild  A Discord.js Guild object.
  */
 async function createPlayingRole(guild) {
-	let role = guild.roles.cache.find(role => role.name === ROLE_NAME);
+	let role = getPlayingRoleForGuild(guild);
 	if (role) {
 		logger.debug(
 			`Guild ${guild.name} (${guild.id}) already has role ${role.id}`
@@ -168,12 +168,13 @@ async function assignRolesFromPresence(presence, nocache) {
  */
 async function addRole(presence) {
 	let userID = presence.userID;
+	let roleID = getPlayingRoleForGuild(presence.guild).id;
 	let member = await presence.guild.members.fetch(userID);
 
-	await member.roles.add(CONFIG.halo_role_id);
+	await member.roles.add(roleID);
 
-	if (!member.roles.cache.has(CONFIG.halo_role_id)) {
-		logger.info(`Assigned role ${CONFIG.halo_role_id} to ${detail(member)}`);
+	if (!member.roles.cache.has(roleID)) {
+		logger.info(`Assigned role ${roleID} to ${detail(member)}`);
 	}
 	player_map.set(userID, member);
 }
@@ -190,16 +191,17 @@ async function addRole(presence) {
  */
 async function removeRole(presence, nocache) {
 	let userID = presence.userID;
+	let roleID = getPlayingRoleForGuild(presence.guild).id;
 	let member = player_map.get(userID);
 
 	if (nocache) {
 		member = await presence.guild.members.fetch(userID);
 	}
 
-	await member.roles.remove(CONFIG.halo_role_id);
+	await member.roles.remove(roleID);
 
-	if (member.roles.cache.has(CONFIG.halo_role_id)) {
-		logger.info(`Removed role ${CONFIG.halo_role_id} from ${detail(member)}`);
+	if (member.roles.cache.has(roleID)) {
+		logger.info(`Removed role ${roleID} from ${detail(member)}`);
 	}
 	player_map.delete(userID);
 }
@@ -216,4 +218,11 @@ function detail(member) {
 
 	return `"${member.user.tag}" (${member.user.id}) ` +
 		`in "${member.guild.name}" (${member.guild.id})`;
+}
+
+/**
+ * Returns the "Now Playing" role for the given Guild, if it has one.
+ */
+function getPlayingRoleForGuild(guild) {
+	return guild.roles.cache.find(role => role.name === ROLE_NAME);
 }

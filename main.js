@@ -26,7 +26,6 @@ const client = new Discord.Client();
 const player_map = new Map();
 
 // Set up the Discord client
-// TODO on guild join, create the halo role if it doesn't exist
 const Events = Discord.Constants.Events;
 client.on(Events.CLIENT_READY, onReady);
 client.on(Events.PRESENCE_UPDATE, onPresenceUpdate);
@@ -35,7 +34,16 @@ client.on(Events.GUILD_DELETE, onGuildLeave);
 
 
 // TODO we need legit logging
-// TODO also, alerting for when we log an error
+//  - Wrap any discord API action. Log to warn on fail.
+//		- Not logging, but we might consider messaging a guild owner when the
+//		bot fails to do something for permissions reasons.
+//
+//  - Log if we ever message someone.
+//
+
+// TODO error checking for Discord API calls
+// TODO check for permissions and API failures
+// TODO alerting for when we log an error
 
 client.login(TOKEN).catch(err => {
 	logger.error(err.stack);
@@ -56,8 +64,6 @@ function onPresenceUpdate(old_presence, new_presence) {
 	assignRolesFromPresence(new_presence);
 }
 
-// TODO error checking for all this stuff
-// TODO check for permissions and API failures
 /// Events.GUILD_CREATE event handler
 function onGuildJoin(guild) {
 	logger.info(`Joined guild "${guild.name}" (${guild.id}) with permissions ${
@@ -73,10 +79,11 @@ function onGuildLeave(guild) {
 }
 
 /**
- * Applies createPlayingRole to every guild this bot can see.
+ * Applies createPlayingRole to every Guild this bot can see.
  */
 async function createRoleAll() {
 	logger.info(`Checking all guilds for "${ROLE_NAME}" role...`);
+	// TODO do we need to await this? We can probably do all of these at once.
 	for await (let guild of client.guilds.cache.values()) {
 		await createPlayingRole(guild);
 	}
@@ -112,8 +119,10 @@ async function createPlayingRole(guild) {
 }
 
 /**
- * Applies assignRolesFromPresence to every guild member this bot can see,
- * across all guilds.
+ * Applies assignRolesFromPresence to every GuildMember this bot can see,
+ * across all Guilds. We do one Guild at a time, which combined with Discord's
+ * rate limit can make this operation take some time to complete.
+ *
  * This also effectively builds out the live cache of players.
  */
 async function assignRolesAll() {
@@ -129,6 +138,7 @@ async function assignRolesAll() {
 		guildCount++;
 		memberCount += members.size;
 
+		// TODO check if guild is available before doing this. (in guild?)
 		await Promise.all(members.map(member => {
 			logger.debug(`Checking ${detail(member)}`);
 			return assignRolesFromPresence(member.presence, true);
@@ -203,6 +213,7 @@ async function removeRole(presence, nocache) {
 		member = await presence.guild.members.fetch(userID);
 	}
 
+	// TODO catch the exception here
 	await member.roles.remove(roleID);
 
 	if (member.roles.cache.has(roleID)) {
@@ -214,6 +225,9 @@ async function removeRole(presence, nocache) {
 /**
  * Given a GuildMember, returns a string describing their name, ID, and which
  * guild they're in. This is helpful for logging for tracing production issues.
+ *
+ * @param member  A Discord.js GuildMember object.
+ * @return string.
  */
 function detail(member) {
 	// Should never happen, but let's handle this case anyway.
@@ -227,6 +241,9 @@ function detail(member) {
 
 /**
  * Returns the "Now Playing" role for the given Guild, if it has one.
+ *
+ * @param guild  A Discord.js Guild object.
+ * @return A Discord.js Role object.
  */
 function getPlayingRoleForGuild(guild) {
 	return guild.roles.cache.find(role => role.name === ROLE_NAME);

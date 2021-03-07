@@ -153,7 +153,12 @@ async function assignRolesFromPresence(presence, nocache) {
 	)) {
 		await addRole(presence);
 	}
-	else if (nocache || player_map.has(presence.userID)) {
+	else if (
+		   nocache
+		|| player_map.has(presence.userID)
+		|| presence.status === 'offline'
+		|| presence.status === 'dnd'
+	) {
 		await removeRole(presence, nocache);
 	}
 }

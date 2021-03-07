@@ -222,7 +222,7 @@ async function removeRole(presence, nocache) {
 	let roleID = getPlayingRoleForGuild(presence.guild).id;
 	let member = player_map.get(userID);
 
-	if (nocache) {
+	if (nocache || !member) {
 		member = await presence.guild.members.fetch(userID);
 	}
 

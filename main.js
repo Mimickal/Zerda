@@ -19,12 +19,6 @@ const ROLE_NAME = 'Currently Playing';
 // TODO handle sharding if we want this in multiple servers
 const client = new Discord.Client();
 
-/**
- * Cache of GuildMembers we have assigned a "Now Playing" role.
- * This allows us to cut down on the number of Discord API calls we need to do.
- */
-const player_map = new Map();
-
 // Set up the Discord client
 const Events = Discord.Constants.Events;
 client.on(Events.CLIENT_READY, onReady);
@@ -123,8 +117,6 @@ async function createPlayingRole(guild) {
  * Applies assignRolesFromPresence to every GuildMember this bot can see,
  * across all Guilds. We do one Guild at a time, which combined with Discord's
  * rate limit can make this operation take some time to complete.
- *
- * This also effectively builds out the live cache of players.
  */
 async function assignRolesAll() {
 	logger.info("Beginning initial member check...");
@@ -165,30 +157,26 @@ async function assignRolesInGuild(guild) {
 
 /**
  * Assigns or removes the "Now Playing" role from the GuildMember in the given
- * Presence object, as applicable. Updates the cache as needed.
+ * Presence object, as applicable.
  *
  * @param presence  A GuildMember's Discord.js Presence object.
- * @param nocache   Passed through to <code>removeRole</code>.
  */
-async function assignRolesFromPresence(presence, nocache) {
-	if (presence.activities.find(activity =>
-		activity.applicationID === CONFIG.halo_app_id
-	)) {
+async function assignRolesFromPresence(presence) {
+	if (
+		presence.activities.find(activity =>
+			activity.applicationID === CONFIG.halo_app_id)
+		&& presence.status !== 'offline' && presence.status !== 'dnd'
+	) {
 		await addRole(presence);
 	}
-	else if (
-		   nocache
-		|| player_map.has(presence.userID)
-		|| presence.status === 'offline'
-		|| presence.status === 'dnd'
-	) {
-		await removeRole(presence, nocache);
+	else {
+		await removeRole(presence);
 	}
 }
 
 /**
  * Adds the Guild-specific "Now Playing" role to the GuildMember in the given
- * Presence object. Also stores that GuildMember in our cache.
+ * Presence object.
  *
  * This function is effectively a no-op if the member already has the role.
  *
@@ -204,26 +192,20 @@ async function addRole(presence) {
 	if (!member.roles.cache.has(roleID)) {
 		logger.info(`Assigned role ${roleID} to ${detail(member)}`);
 	}
-	player_map.set(userID, member);
 }
 
 /**
  * Removes the Guild-specific "Now Playing" role from the GuildMember in the
- * given Presence object. Also removes that GuildMember from our cache.
- *
+ * given Presence object.
  * This function is effectively a no-op if the member does not have the role.
  *
  * @param presence  A GuildMember's Discord.js Presence object.
- * @param nocache   Disables using our cached GuildMember. If true, this will
- *                  force a member fetch from Discord's API.
  */
-async function removeRole(presence, nocache) {
+async function removeRole(presence) {
 	const userID = presence.userID;
 	const roleID = getPlayingRoleForGuild(presence.guild).id;
-	let member = player_map.get(userID);
+	let member = await presence.guild.members.fetch(userID);
 
-	if (nocache || !member) {
-		member = await presence.guild.members.fetch(userID);
 	}
 
 	// TODO catch the exception here
@@ -232,7 +214,6 @@ async function removeRole(presence, nocache) {
 	if (member.roles.cache.has(roleID)) {
 		logger.info(`Removed role ${roleID} from ${detail(member)}`);
 	}
-	player_map.delete(userID);
 }
 
 /**

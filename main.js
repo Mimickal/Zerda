@@ -14,12 +14,22 @@ const logger = require('./logger.js');
 // TODO temporary easy stuff for testing.
 const TOKEN = fs.readFileSync(process.argv[2]).toString().trim();
 const CONFIG = require('./config.json');
+const PACKAGE = require('./package.json');
 const ROLE_NAME = 'Currently Playing';
 
+// TODO this is getting big like the logger. Maybe pull this out to its own file
 // TODO handle sharding if we want this in multiple servers
 // Set up the Discord client
 const Intents = Discord.Intents.FLAGS;
 const client = new Discord.Client({
+	presence: {
+		activity: {
+			// I don't like hard-coding this, but Discord.js does not give a
+			// nice value in Constants like it does for Events :(
+			type: 'PLAYING',
+			name: `Version ${PACKAGE.version}`,
+		},
+	},
 	ws: {
 		intents: [
 			Intents.GUILDS,

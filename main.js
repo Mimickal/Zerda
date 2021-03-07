@@ -17,9 +17,18 @@ const CONFIG = require('./config.json');
 const ROLE_NAME = 'Currently Playing';
 
 // TODO handle sharding if we want this in multiple servers
-const client = new Discord.Client();
-
 // Set up the Discord client
+const Intents = Discord.Intents.FLAGS;
+const client = new Discord.Client({
+	ws: {
+		intents: [
+			Intents.GUILDS,
+			Intents.GUILD_MEMBERS,
+			Intents.GUILD_PRESENCES,
+		],
+	},
+});
+
 const Events = Discord.Constants.Events;
 client.on(Events.CLIENT_READY, onReady);
 client.on(Events.PRESENCE_UPDATE, onPresenceUpdate);
@@ -177,21 +186,20 @@ async function assignRolesFromPresence(presence) {
 /**
  * Adds the Guild-specific "Now Playing" role to the GuildMember in the given
  * Presence object.
- *
  * This function is effectively a no-op if the member already has the role.
  *
  * @param presence  A GuildMember's Discord.js Presence object.
  */
 async function addRole(presence) {
-	const userID = presence.userID;
 	const role = await getPlayingRoleForGuild(presence.guild);
-	const member = await presence.guild.members.fetch(userID);
+	const member = await presence.guild.members.fetch(presence.userID);
+
+	if (member.roles.cache.has(role.id)) {
+		return;
+	}
 
 	await member.roles.add(role);
-
-	if (!member.roles.cache.has(role.id)) {
-		logger.info(`Assigned role (${role.id}) to ${detail(member)}`);
-	}
+	logger.info(`Assigned role (${role.id}) to ${detail(member)}`);
 }
 
 /**
@@ -202,16 +210,23 @@ async function addRole(presence) {
  * @param presence  A GuildMember's Discord.js Presence object.
  */
 async function removeRole(presence) {
-	const userID = presence.userID;
-	const role = await getPlayingRoleForGuild(presence.guild)
-	let member = await presence.guild.members.fetch(userID);
+	const role = await getPlayingRoleForGuild(presence.guild);
+	let member = await presence.guild.members.fetch(presence.userID);
 
-	await member.roles.remove(role);
+	if (!member.roles.cache.has(role.id)) {
+		return;
 	}
 
-	// TODO catch the exception here
-	if (member.roles.cache.has(role.id)) {
+	try {
+		await member.roles.remove(role);
+
 		logger.info(`Removed role (${role.id}) from ${detail(member)}`);
+	}
+	catch (err) {
+		logger.warn(
+			`Error removing role (${role.id}) from ${detail(member)}\n`
+			+ err.stack
+		);
 	}
 }
 

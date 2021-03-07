@@ -36,18 +36,10 @@ client.on(Events.GUILD_CREATE, onGuildJoin);
 client.on(Events.GUILD_DELETE, onGuildLeave);
 
 
-// TODO we need legit logging
-//  - Wrap any discord API action. Log to warn on fail.
-//		- Not logging, but we might consider messaging a guild owner when the
-//		bot fails to do something for permissions reasons.
-//
-//  - Log if we ever message someone.
-//
+// TODO Log if we ever message someone.
+// TODO check fo API failures (like we can't contact Discord)
 
-// TODO error checking for Discord API calls
-// TODO check for permissions and API failures
-// TODO alerting for when we log an error
-
+logger.info('Logging in...');
 client.login(TOKEN).catch(err => {
 	logger.error(err.stack);
 	process.exit(1);
@@ -58,6 +50,7 @@ client.login(TOKEN).catch(err => {
 async function onReady() {
 	logger.info(`Logged in as ${client.user.tag} (${client.user.id})`);
 
+	// TODO catch error if we don't have permissions
 	await createRoleAll();
 	await assignRolesAll();
 }
@@ -108,18 +101,30 @@ async function createPlayingRole(guild) {
 		return;
 	}
 
-	role = await guild.roles.create({
-		data: {
-			hoist: true, // VERY IMPORTANT! This bot doesn't work without this!
-			mentionable: true,
-			name: ROLE_NAME,
-			permissions: 0,
-			position: 0, // TODO mention in readme that people will want to reorder this
-		},
-		reason: 'Role for people currently playing',
-	});
+	try {
+		role = await guild.roles.create({
+			data: {
+				hoist: true, // VERY IMPORTANT! This bot doesn't work without this!
+				mentionable: true,
+				name: ROLE_NAME,
+				permissions: 0,
+				position: 0,
+			},
+			reason: 'Role for people currently playing',
+		});
 
-	logger.info(`Created role ${role.id} in guild "${guild.name}" (${guild.id})`);
+		logger.info(
+			`Created role ${role.id} in guild "${guild.name}" (${guild.id})`
+		);
+	}
+	catch (err) {
+		logger.warn(
+			`Error creating "${ROLE_NAME}" role in guild "${guild.name}" (${guild.id})`
+			+ err.stack
+		);
+
+		// TODO probably message guild owner
+	}
 }
 
 /**
@@ -153,11 +158,12 @@ async function assignRolesAll() {
 async function assignRolesInGuild(guild) {
 	// TODO how will we handle more than 1000 users? Do we need a special
 	// API permission for this?
-	const  members = await guild.members.fetch();
+	const members = await guild.members.fetch();
 
 	// TODO check if guild is available before doing this. (in guild?)
 	await Promise.all(members.map(member => {
 		logger.debug(`Checking ${detail(member)}`);
+
 		return assignRolesFromPresence(member.presence, true);
 	}));
 
@@ -198,8 +204,16 @@ async function addRole(presence) {
 		return;
 	}
 
-	await member.roles.add(role);
-	logger.info(`Assigned role (${role.id}) to ${detail(member)}`);
+	try {
+		await member.roles.add(role);
+
+		logger.info(`Assigned role (${role.id}) to ${detail(member)}`);
+	}
+	catch (err) {
+		logger.warn(
+			`Error adding role (${role.id}) to ${detail(member)}\n` + err.stack
+		);
+	}
 }
 
 /**
@@ -211,7 +225,7 @@ async function addRole(presence) {
  */
 async function removeRole(presence) {
 	const role = await getPlayingRoleForGuild(presence.guild);
-	let member = await presence.guild.members.fetch(presence.userID);
+	const member = await presence.guild.members.fetch(presence.userID);
 
 	if (!member.roles.cache.has(role.id)) {
 		return;
@@ -267,6 +281,7 @@ async function getPlayingRoleForGuild(guild) {
 			`Failed to find "${ROLE_NAME}" role in "${guild.name}" (${guild.id}).`
 			+ ' The role may have been deleted or renamed.'
 		);
+
 		// TODO message guild owner?
 	}
 

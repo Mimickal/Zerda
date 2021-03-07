@@ -85,7 +85,7 @@ function onGuildLeave(guild) {
 async function createRoleAll() {
 	logger.info(`Checking all guilds for "${ROLE_NAME}" role...`);
 	// TODO do we need to await this? We can probably do all of these at once.
-	for await (let guild of client.guilds.cache.values()) {
+	for await (const guild of client.guilds.cache.values()) {
 		await createPlayingRole(guild);
 	}
 }
@@ -131,8 +131,8 @@ async function assignRolesAll() {
 	let guildCount = 0;
 	let memberCount = 0;
 
-	for await (let guild of client.guilds.cache.values()) {
-		let count = await assignRolesInGuild(guild);
+	for await (const guild of client.guilds.cache.values()) {
+		const count = await assignRolesInGuild(guild);
 		guildCount++;
 		memberCount += count;
 	}
@@ -152,7 +152,7 @@ async function assignRolesAll() {
 async function assignRolesInGuild(guild) {
 	// TODO how will we handle more than 1000 users? Do we need a special
 	// API permission for this?
-	let members = await guild.members.fetch();
+	const  members = await guild.members.fetch();
 
 	// TODO check if guild is available before doing this. (in guild?)
 	await Promise.all(members.map(member => {
@@ -195,9 +195,9 @@ async function assignRolesFromPresence(presence, nocache) {
  * @param presence  A GuildMember's Discord.js Presence object.
  */
 async function addRole(presence) {
-	let userID = presence.userID;
-	let roleID = getPlayingRoleForGuild(presence.guild).id;
-	let member = await presence.guild.members.fetch(userID);
+	const userID = presence.userID;
+	const roleID = getPlayingRoleForGuild(presence.guild).id;
+	const member = await presence.guild.members.fetch(userID);
 
 	await member.roles.add(roleID);
 
@@ -218,8 +218,8 @@ async function addRole(presence) {
  *                  force a member fetch from Discord's API.
  */
 async function removeRole(presence, nocache) {
-	let userID = presence.userID;
-	let roleID = getPlayingRoleForGuild(presence.guild).id;
+	const userID = presence.userID;
+	const roleID = getPlayingRoleForGuild(presence.guild).id;
 	let member = player_map.get(userID);
 
 	if (nocache || !member) {

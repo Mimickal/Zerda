@@ -12,9 +12,9 @@ const LOG_FILE_NAME = 'output.log';
 const IS_PROD = process.env.NODE_ENV === 'prod';
 
 
-let logger = Winston.createLogger();
+const logger = Winston.createLogger();
 
-let logFormat = Winston.format.combine(
+const logFormat = Winston.format.combine(
 	Winston.format.timestamp(),
 	Winston.format.printf( ({ level, message, timestamp }) => {
 		return `${timestamp} [${level}]: ${message}`;

@@ -65,12 +65,13 @@ function onPresenceUpdate(old_presence, new_presence) {
 }
 
 /// Events.GUILD_CREATE event handler
-function onGuildJoin(guild) {
+async function onGuildJoin(guild) {
 	logger.info(`Joined guild "${guild.name}" (${guild.id}) with permissions ${
 		guild.member(client.user.id).permissions.bitfield
 	}`);
 
-	createPlayingRole(guild);
+	await createPlayingRole(guild);
+	await assignRolesInGuild(guild);
 }
 
 /// Events.GUILD_DELETE event handler
@@ -131,23 +132,35 @@ async function assignRolesAll() {
 	let memberCount = 0;
 
 	for await (let guild of client.guilds.cache.values()) {
-		// TODO how will we handle more than 1000 users? Do we need a special
-		// API permission for this?
-		let members = await guild.members.fetch();
-
+		let count = await assignRolesInGuild(guild);
 		guildCount++;
-		memberCount += members.size;
-
-		// TODO check if guild is available before doing this. (in guild?)
-		await Promise.all(members.map(member => {
-			logger.debug(`Checking ${detail(member)}`);
-			return assignRolesFromPresence(member.presence, true);
-		}));
+		memberCount += count;
 	}
-
 
 	logger.info("Finished initial member check. " +
 		`Checked ${memberCount} members across ${guildCount} guilds`);
+}
+
+/**
+ * Applies assignRolesFromPresence to every GuildMember in the given Guild.
+ * We are limited by Discord's API rate limit, so this can take some time to
+ * complete.
+ *
+ * @param guild  A Discord.js Guild object.
+ * @return the number of GuildMembers we checked.
+ */
+async function assignRolesInGuild(guild) {
+	// TODO how will we handle more than 1000 users? Do we need a special
+	// API permission for this?
+	let members = await guild.members.fetch();
+
+	// TODO check if guild is available before doing this. (in guild?)
+	await Promise.all(members.map(member => {
+		logger.debug(`Checking ${detail(member)}`);
+		return assignRolesFromPresence(member.presence, true);
+	}));
+
+	return members.size;
 }
 
 /**

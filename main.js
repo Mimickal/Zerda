@@ -91,7 +91,7 @@ async function createRoleAll() {
  * @param guild  A Discord.js Guild object.
  */
 async function createPlayingRole(guild) {
-	let role = getPlayingRoleForGuild(guild);
+	let role = await getPlayingRoleForGuild(guild);
 	if (role) {
 		logger.debug(
 			`Guild ${guild.name} (${guild.id}) already has role ${role.id}`
@@ -184,13 +184,13 @@ async function assignRolesFromPresence(presence) {
  */
 async function addRole(presence) {
 	const userID = presence.userID;
-	const roleID = getPlayingRoleForGuild(presence.guild).id;
+	const role = await getPlayingRoleForGuild(presence.guild);
 	const member = await presence.guild.members.fetch(userID);
 
-	await member.roles.add(roleID);
+	await member.roles.add(role);
 
-	if (!member.roles.cache.has(roleID)) {
-		logger.info(`Assigned role ${roleID} to ${detail(member)}`);
+	if (!member.roles.cache.has(role.id)) {
+		logger.info(`Assigned role (${role.id}) to ${detail(member)}`);
 	}
 }
 
@@ -203,16 +203,15 @@ async function addRole(presence) {
  */
 async function removeRole(presence) {
 	const userID = presence.userID;
-	const roleID = getPlayingRoleForGuild(presence.guild).id;
+	const role = await getPlayingRoleForGuild(presence.guild)
 	let member = await presence.guild.members.fetch(userID);
 
+	await member.roles.remove(role);
 	}
 
 	// TODO catch the exception here
-	await member.roles.remove(roleID);
-
-	if (member.roles.cache.has(roleID)) {
-		logger.info(`Removed role ${roleID} from ${detail(member)}`);
+	if (member.roles.cache.has(role.id)) {
+		logger.info(`Removed role (${role.id}) from ${detail(member)}`);
 	}
 }
 
@@ -234,11 +233,27 @@ function detail(member) {
 }
 
 /**
- * Returns the "Now Playing" role for the given Guild, if it has one.
+ * Returns the "Now Playing" role for the given Guild, if it has one. Can return
+ * undefined if we cannot find the role even after an API fetch.
  *
  * @param guild  A Discord.js Guild object.
- * @return A Discord.js Role object.
+ * @return A Discord.js Role object, or undefined.
  */
-function getPlayingRoleForGuild(guild) {
-	return guild.roles.cache.find(role => role.name === ROLE_NAME);
+async function getPlayingRoleForGuild(guild) {
+	let role = guild.roles.cache.find(role => role.name === ROLE_NAME);
+
+	if (!role) {
+		await guild.roles.fetch();
+		role = guild.roles.cache.find(role => role.name === ROLE_NAME);
+	}
+
+	if (!role) { // Still
+		logger.warn(
+			`Failed to find "${ROLE_NAME}" role in "${guild.name}" (${guild.id}).`
+			+ ' The role may have been deleted or renamed.'
+		);
+		// TODO message guild owner?
+	}
+
+	return role;
 }

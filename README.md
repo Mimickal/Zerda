@@ -1,5 +1,5 @@
-# PlayingBot
-PlayingBot is a Discord bot that assigns a temporary role to people playing
+# Zerda
+Zerda is a Discord bot that assigns a temporary role to people playing
 certain games so that they sort higher in the user list. This will allow people
 to more easily find matches and join each others' matches from Discord.
 
@@ -34,4 +34,8 @@ This bot is currently only intended to work alongside
 [Vulpes](https://github.com/Sigmmma/Vulpes), the Halo: CE engine extension mod.
 If it proves to be a popular enough concept, I may add the ability to configure
 more hoisted games.
+
+## Fun facts
+Zerda gets its name from "Vulpes zerda", the taxonomic name for fennec foxes,
+because much like fennec foxes, this bot is tiny, fast, and makes a lot of noise.
 

@@ -10,6 +10,7 @@ const fs = require('fs');
 const Discord = require('discord.js');
 
 const logger = require('./logger.js');
+const { detail } = require('./util');
 
 // TODO temporary easy stuff for testing.
 const TOKEN = fs.readFileSync(process.argv[2]).toString().trim();
@@ -248,44 +249,6 @@ async function removeRole(presence) {
 			`Error removing ${detail(role)} from ${detail(member)}\n`
 			+ err.stack
 		);
-	}
-}
-
-/**
- * Given a Discord.js object, returns a string describing it in better detail.
- * This is helpful for logging so we can better trace production issues.
- *
- * Currently supported:
- *   GuildMember, Guild, Role, User
- *
- * @param thing  A supported Discord.js object.
- * @return string describing the thing.
- */
-function detail(thing) {
-	// Should never happen, but let's handle this case anyway.
-	if (!thing) {
-		return "[undefined]";
-	}
-
-	if (thing instanceof Discord.GuildMember) {
-		const member = thing;
-		return `Member "${member.user.tag}" (${member.user.id}) ` +
-			`in "${member.guild.name}" (${member.guild.id})`;
-	}
-	else if (thing instanceof Discord.Guild) {
-		const guild = thing;
-		return `Guild "${guild.name}" (${guild.id})`;
-	}
-	else if (thing instanceof Discord.Role) {
-		const role = thing;
-		return `Role "${role.name}" (${role.id})`;
-	}
-	else if (thing instanceof Discord.User) {
-		const user = thing;
-		return `User "${user.tag}" (${user.id})`;
-	}
-	else {
-		throw Error("Unsupported type " + typeof(thing));
 	}
 }
 

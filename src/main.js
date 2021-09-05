@@ -9,7 +9,8 @@
 const fs = require('fs');
 const Discord = require('discord.js');
 
-const logger = require('./logger.js');
+const handleCommandMessage = require('./commands');
+const logger = require('./logger');
 const { detail } = require('./util');
 
 // TODO temporary easy stuff for testing.
@@ -33,8 +34,10 @@ const client = new Discord.Client({
 	},
 	ws: {
 		intents: [
+			Intents.DIRECT_MESSAGES, // Unused, but useful for logging
 			Intents.GUILDS,
 			Intents.GUILD_MEMBERS,
+			Intents.GUILD_MESSAGES,
 			Intents.GUILD_PRESENCES,
 		],
 	},
@@ -45,6 +48,7 @@ client.on(Events.CLIENT_READY, onReady);
 client.on(Events.PRESENCE_UPDATE, onPresenceUpdate);
 client.on(Events.GUILD_CREATE, onGuildJoin);
 client.on(Events.GUILD_DELETE, onGuildLeave);
+client.on(Events.MESSAGE_CREATE, onMessage);
 
 
 // TODO Log if we ever message someone.
@@ -84,6 +88,11 @@ async function onGuildJoin(guild) {
 /// Events.GUILD_DELETE event handler
 function onGuildLeave(guild) {
 	logger.info(`Left ${detail(guild)}`);
+}
+
+/// Events.MESSAGE_CREATE event handler
+function onMessage(msg) {
+	handleCommandMessage(client, msg);
 }
 
 /**

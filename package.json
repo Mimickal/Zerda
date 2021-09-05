@@ -2,9 +2,9 @@
   "name": "zerda",
   "version": "0.1.0",
   "description": "Discord bot that assigns roles to people who are playing a game, so they sort higher in the users list",
-  "main": "main.js",
+  "main": "src/main.js",
   "scripts": {
-    "dev": "node main.js dev-token",
+    "dev": "node src/main.js dev-token",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Mimickal",

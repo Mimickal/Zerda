@@ -13,8 +13,8 @@ const logger = require('./logger.js');
 
 // TODO temporary easy stuff for testing.
 const TOKEN = fs.readFileSync(process.argv[2]).toString().trim();
-const CONFIG = require('./config.json');
-const PACKAGE = require('./package.json');
+const CONFIG = require('../config.json');
+const PACKAGE = require('../package.json');
 const ROLE_NAME = 'Currently Playing';
 
 // TODO this is getting big like the logger. Maybe pull this out to its own file

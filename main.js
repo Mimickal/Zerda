@@ -207,6 +207,7 @@ async function addRole(presence) {
 	const member = await presence.guild.members.fetch(presence.userID);
 
 	if (member.roles.cache.has(role.id)) {
+		logger.info(`${detail(member)} already has ${detail(role)}`);
 		return;
 	}
 

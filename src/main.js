@@ -25,22 +25,18 @@ const ROLE_NAME = 'Currently Playing';
 const Intents = Discord.Intents.FLAGS;
 const client = new Discord.Client({
 	presence: {
-		activity: {
-			// I don't like hard-coding this, but Discord.js does not give a
-			// nice value in Constants like it does for Events :(
-			type: 'LISTENING',
+		activities: [{
+			type: Discord.Constants.ActivityTypes.LISTENING,
 			name: `'help' for commands. Running version ${PACKAGE.version}`,
-		},
+		}],
 	},
-	ws: {
-		intents: [
-			Intents.DIRECT_MESSAGES, // Unused, but useful for logging
-			Intents.GUILDS,
-			Intents.GUILD_MEMBERS,
-			Intents.GUILD_MESSAGES,
-			Intents.GUILD_PRESENCES,
-		],
-	},
+	intents: [
+		Intents.DIRECT_MESSAGES, // Unused, but useful for logging
+		Intents.GUILDS,
+		Intents.GUILD_MEMBERS,
+		Intents.GUILD_MESSAGES,  // This is going to be an issue soon
+		Intents.GUILD_PRESENCES,
+	],
 });
 
 const Events = Discord.Constants.Events;
@@ -72,7 +68,7 @@ async function onReady() {
 
 /// Events.PRESENCE_UPDATE event handler
 function onPresenceUpdate(old_presence, new_presence) {
-	assignRolesFromPresence(new_presence);
+	assignRolesToMember(new_presence.member);
 }
 
 /// Events.GUILD_CREATE event handler
@@ -144,7 +140,7 @@ async function createPlayingRole(guild) {
 }
 
 /**
- * Applies assignRolesFromPresence to every GuildMember this bot can see,
+ * Applies assignRolesToMember to every GuildMember this bot can see,
  * across all Guilds. We do one Guild at a time, which combined with Discord's
  * rate limit can make this operation take some time to complete.
  */
@@ -164,7 +160,7 @@ async function assignRolesAll() {
 }
 
 /**
- * Applies assignRolesFromPresence to every GuildMember in the given Guild.
+ * Applies assignRolesToMember to every GuildMember in the given Guild.
  * We are limited by Discord's API rate limit, so this can take some time to
  * complete.
  *
@@ -180,41 +176,42 @@ async function assignRolesInGuild(guild) {
 	await Promise.all(members.map(member => {
 		logger.debug(`Checking ${detail(member)}`);
 
-		return assignRolesFromPresence(member.presence, true);
+		return assignRolesToMember(member);
 	}));
 
 	return members.size;
 }
 
 /**
- * Assigns or removes the "Now Playing" role from the GuildMember in the given
- * Presence object, as applicable.
+ * Assigns or removes the "Now Playing" role to or from the given GuildMember,
+ * as applicable.
  *
- * @param presence  A GuildMember's Discord.js Presence object.
+ * @param member  A Discord.js GuildMember object.
  */
-async function assignRolesFromPresence(presence) {
+async function assignRolesToMember(member) {
+	const presence = member.presence;
 	if (
-		presence.activities.find(activity =>
-			activity.applicationID === CONFIG.halo_app_id)
+		// FIXME this is a mess. Probably pull this out to another function
+		presence // Can be null for offline members
+		&& presence.activities.find(activity =>
+			activity.applicationId === CONFIG.halo_app_id)
 		&& presence.status !== 'offline' && presence.status !== 'dnd'
 	) {
-		await addRole(presence);
+		await addRole(member);
 	}
 	else {
-		await removeRole(presence);
+		await removeRole(member);
 	}
 }
 
 /**
- * Adds the Guild-specific "Now Playing" role to the GuildMember in the given
- * Presence object.
+ * Adds the Guild-specific "Now Playing" role to the given GuildMember.
  * This function is effectively a no-op if the member already has the role.
  *
- * @param presence  A GuildMember's Discord.js Presence object.
+ * @param member  A Discord.js GuildMember object.
  */
-async function addRole(presence) {
-	const role = await getPlayingRoleForGuild(presence.guild);
-	const member = await presence.guild.members.fetch(presence.userID);
+async function addRole(member) {
+	const role = await getPlayingRoleForGuild(member.guild);
 
 	if (member.roles.cache.has(role.id)) {
 		logger.info(`${detail(member)} already has ${detail(role)}`);
@@ -234,15 +231,13 @@ async function addRole(presence) {
 }
 
 /**
- * Removes the Guild-specific "Now Playing" role from the GuildMember in the
- * given Presence object.
+ * Removes the Guild-specific "Now Playing" role from the given GuildMember.
  * This function is effectively a no-op if the member does not have the role.
  *
- * @param presence  A GuildMember's Discord.js Presence object.
+ * @param member  A Discord.js GuildMember object.
  */
-async function removeRole(presence) {
-	const role = await getPlayingRoleForGuild(presence.guild);
-	const member = await presence.guild.members.fetch(presence.userID);
+async function removeRole(member) {
+	const role = await getPlayingRoleForGuild(member.guild);
 
 	if (!member.roles.cache.has(role.id)) {
 		return;

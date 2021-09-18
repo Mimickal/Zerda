@@ -17,6 +17,7 @@ const { detail } = require('./util');
 
 const PACKAGE = require('../package.json');
 const COMMANDS = new CommandRegistry()
+	.asynchronous(true)
 	.defaultHandler(handlerDefault)
 	.helpHandler(handlerHelp)
 	.add(new Command('info')
@@ -73,7 +74,7 @@ function handlerHelp(args, commands, msg) {
 		commands.forEach(command => addCommandToEmbed(command));
 	}
 
-	return msg.reply(embed);
+	return msg.reply({ embeds: [embed] });
 }
 
 /// Info command handler

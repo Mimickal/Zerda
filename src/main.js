@@ -9,12 +9,14 @@
 const fs = require('fs');
 const Discord = require('discord.js');
 
-const logger = require('./logger.js');
+const handleCommandMessage = require('./commands');
+const logger = require('./logger');
+const { detail } = require('./util');
 
 // TODO temporary easy stuff for testing.
 const TOKEN = fs.readFileSync(process.argv[2]).toString().trim();
-const CONFIG = require('./config.json');
-const PACKAGE = require('./package.json');
+const CONFIG = require('../config.json');
+const PACKAGE = require('../package.json');
 const ROLE_NAME = 'Currently Playing';
 
 // TODO this is getting big like the logger. Maybe pull this out to its own file
@@ -26,14 +28,16 @@ const client = new Discord.Client({
 		activity: {
 			// I don't like hard-coding this, but Discord.js does not give a
 			// nice value in Constants like it does for Events :(
-			type: 'PLAYING',
-			name: `Version ${PACKAGE.version}`,
+			type: 'LISTENING',
+			name: `'help' for commands. Running version ${PACKAGE.version}`,
 		},
 	},
 	ws: {
 		intents: [
+			Intents.DIRECT_MESSAGES, // Unused, but useful for logging
 			Intents.GUILDS,
 			Intents.GUILD_MEMBERS,
+			Intents.GUILD_MESSAGES,
 			Intents.GUILD_PRESENCES,
 		],
 	},
@@ -44,6 +48,7 @@ client.on(Events.CLIENT_READY, onReady);
 client.on(Events.PRESENCE_UPDATE, onPresenceUpdate);
 client.on(Events.GUILD_CREATE, onGuildJoin);
 client.on(Events.GUILD_DELETE, onGuildLeave);
+client.on(Events.MESSAGE_CREATE, onMessage);
 
 
 // TODO Log if we ever message someone.
@@ -58,7 +63,7 @@ client.login(TOKEN).catch(err => {
 
 /// Events.CLIENT_READY event handler
 async function onReady() {
-	logger.info(`Logged in as ${client.user.tag} (${client.user.id})`);
+	logger.info(`Logged in as ${detail(client.user)}`);
 
 	// TODO catch error if we don't have permissions
 	await createRoleAll();
@@ -83,6 +88,11 @@ async function onGuildJoin(guild) {
 /// Events.GUILD_DELETE event handler
 function onGuildLeave(guild) {
 	logger.info(`Left ${detail(guild)}`);
+}
+
+/// Events.MESSAGE_CREATE event handler
+function onMessage(msg) {
+	handleCommandMessage(client, msg);
 }
 
 /**
@@ -248,44 +258,6 @@ async function removeRole(presence) {
 			`Error removing ${detail(role)} from ${detail(member)}\n`
 			+ err.stack
 		);
-	}
-}
-
-/**
- * Given a Discord.js object, returns a string describing it in better detail.
- * This is helpful for logging so we can better trace production issues.
- *
- * Currently supported:
- *   GuildMember, Guild, Role, User
- *
- * @param thing  A supported Discord.js object.
- * @return string describing the thing.
- */
-function detail(thing) {
-	// Should never happen, but let's handle this case anyway.
-	if (!thing) {
-		return "[undefined]";
-	}
-
-	if (thing instanceof Discord.GuildMember) {
-		const member = thing;
-		return `Member "${member.user.tag}" (${member.user.id}) ` +
-			`in "${member.guild.name}" (${member.guild.id})`;
-	}
-	else if (thing instanceof Discord.Guild) {
-		const guild = thing;
-		return `Guild "${guild.name}" (${guild.id})`;
-	}
-	else if (thing instanceof Discord.Role) {
-		const role = thing;
-		return `Role "${role.name}" (${role.id})`;
-	}
-	else if (thing instanceof Discord.User) {
-		const user = thing;
-		return `User "${user.tag}" (${user.id})`;
-	}
-	else {
-		throw Error("Unsupported type " + typeof(thing));
 	}
 }
 

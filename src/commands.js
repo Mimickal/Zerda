@@ -81,7 +81,7 @@ function handlerInfo(args, msg) {
 	return msg.reply(
 		`I am a ${PACKAGE.description}.\n` +
 		`**Running version:** ${PACKAGE.version}\n` +
-		`**Source code:** ${PACKAGE.homepage}\n`
+		`**Source code:** ${PACKAGE.repository.url}\n`
 	);
 }
 

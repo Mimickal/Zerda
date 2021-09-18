@@ -61,7 +61,7 @@ function handlerHelp(args, commands, msg) {
 		.setTitle('Commands Help');
 
 	const addCommandToEmbed = (command) => embed.addField(
-		`\`${command.usage()}\``, command.getDescription()
+		`\`${command.usage()}\``, command.desc
 	);
 
 	if (args.command) {

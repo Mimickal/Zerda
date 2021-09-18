@@ -72,7 +72,7 @@ function onPresenceUpdate(old_presence, new_presence) {
 
 /// Events.GUILD_CREATE event handler
 async function onGuildJoin(guild) {
-	logger.info(`Joined guild "${guild.name}" (${guild.id}) with permissions ${
+	logger.info(`Joined ${detail(guild)} with permissions ${
 		guild.member(client.user.id).permissions.bitfield
 	}`);
 
@@ -82,7 +82,7 @@ async function onGuildJoin(guild) {
 
 /// Events.GUILD_DELETE event handler
 function onGuildLeave(guild) {
-	logger.info(`Left guild "${guild.name}" (${guild.id})`);
+	logger.info(`Left ${detail(guild)}`);
 }
 
 /**
@@ -105,9 +105,7 @@ async function createRoleAll() {
 async function createPlayingRole(guild) {
 	let role = await getPlayingRoleForGuild(guild);
 	if (role) {
-		logger.debug(
-			`Guild ${guild.name} (${guild.id}) already has role ${role.id}`
-		);
+		logger.debug(`${detail(guild)} already has ${detail(role)}`);
 		return;
 	}
 
@@ -123,13 +121,11 @@ async function createPlayingRole(guild) {
 			reason: 'Role for people currently playing',
 		});
 
-		logger.info(
-			`Created role ${role.id} in guild "${guild.name}" (${guild.id})`
-		);
+		logger.info(`Created ${detail(role)} in ${detail(guild)}`);
 	}
 	catch (err) {
 		logger.warn(
-			`Error creating "${ROLE_NAME}" role in guild "${guild.name}" (${guild.id})`
+			`Error creating Role "${ROLE_NAME}" in ${detail(guild)}`
 			+ err.stack
 		);
 
@@ -211,17 +207,18 @@ async function addRole(presence) {
 	const member = await presence.guild.members.fetch(presence.userID);
 
 	if (member.roles.cache.has(role.id)) {
+		logger.info(`${detail(member)} already has ${detail(role)}`);
 		return;
 	}
 
 	try {
 		await member.roles.add(role);
 
-		logger.info(`Assigned role (${role.id}) to ${detail(member)}`);
+		logger.info(`Assigned ${detail(role)} to ${detail(member)}`);
 	}
 	catch (err) {
 		logger.warn(
-			`Error adding role (${role.id}) to ${detail(member)}\n` + err.stack
+			`Error assigning ${detail(role)} to ${detail(member)}\n` + err.stack
 		);
 	}
 }
@@ -244,31 +241,52 @@ async function removeRole(presence) {
 	try {
 		await member.roles.remove(role);
 
-		logger.info(`Removed role (${role.id}) from ${detail(member)}`);
+		logger.info(`Removed ${detail(role)} from ${detail(member)}`);
 	}
 	catch (err) {
 		logger.warn(
-			`Error removing role (${role.id}) from ${detail(member)}\n`
+			`Error removing ${detail(role)} from ${detail(member)}\n`
 			+ err.stack
 		);
 	}
 }
 
 /**
- * Given a GuildMember, returns a string describing their name, ID, and which
- * guild they're in. This is helpful for logging for tracing production issues.
+ * Given a Discord.js object, returns a string describing it in better detail.
+ * This is helpful for logging so we can better trace production issues.
  *
- * @param member  A Discord.js GuildMember object.
- * @return string.
+ * Currently supported:
+ *   GuildMember, Guild, Role, User
+ *
+ * @param thing  A supported Discord.js object.
+ * @return string describing the thing.
  */
-function detail(member) {
+function detail(thing) {
 	// Should never happen, but let's handle this case anyway.
-	if (!member) {
+	if (!thing) {
 		return "[undefined]";
 	}
 
-	return `"${member.user.tag}" (${member.user.id}) ` +
-		`in "${member.guild.name}" (${member.guild.id})`;
+	if (thing instanceof Discord.GuildMember) {
+		const member = thing;
+		return `Member "${member.user.tag}" (${member.user.id}) ` +
+			`in "${member.guild.name}" (${member.guild.id})`;
+	}
+	else if (thing instanceof Discord.Guild) {
+		const guild = thing;
+		return `Guild "${guild.name}" (${guild.id})`;
+	}
+	else if (thing instanceof Discord.Role) {
+		const role = thing;
+		return `Role "${role.name}" (${role.id})`;
+	}
+	else if (thing instanceof Discord.User) {
+		const user = thing;
+		return `User "${user.tag}" (${user.id})`;
+	}
+	else {
+		throw Error("Unsupported type " + typeof(thing));
+	}
 }
 
 /**
@@ -288,7 +306,7 @@ async function getPlayingRoleForGuild(guild) {
 
 	if (!role) { // Still
 		logger.warn(
-			`Failed to find "${ROLE_NAME}" role in "${guild.name}" (${guild.id}).`
+			`Failed to find "${ROLE_NAME}" role in ${detail(guild)}.`
 			+ ' The role may have been deleted or renamed.'
 		);
 

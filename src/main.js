@@ -63,7 +63,7 @@ client.login(TOKEN).catch(err => {
 
 /// Events.CLIENT_READY event handler
 async function onReady() {
-	logger.info(`Logged in as ${client.user.tag} (${client.user.id})`);
+	logger.info(`Logged in as ${detail(client.user)}`);
 
 	// TODO catch error if we don't have permissions
 	await createRoleAll();

@@ -26,8 +26,11 @@ function detail(thing) {
 
 	if (thing instanceof Discord.GuildMember) {
 		const member = thing;
-		return `Member "${member.user.tag}" (${member.user.id}) ` +
-			`in "${member.guild.name}" (${member.guild.id})`;
+		let string = `Member "${member.user.tag}" `;
+		if (member.nickname) {
+			string += `[${member.nickname}] `;
+		}
+		return string + `in "${member.guild.name}" (${member.guild.id})`;
 	}
 	else if (thing instanceof Discord.Guild) {
 		const guild = thing;

@@ -28,8 +28,8 @@ const client = new Discord.Client({
 		activity: {
 			// I don't like hard-coding this, but Discord.js does not give a
 			// nice value in Constants like it does for Events :(
-			type: 'PLAYING',
-			name: `Version ${PACKAGE.version}`,
+			type: 'LISTENING',
+			name: `'help' for commands. Running version ${PACKAGE.version}`,
 		},
 	},
 	ws: {

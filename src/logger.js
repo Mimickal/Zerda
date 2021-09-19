@@ -42,7 +42,7 @@ function errStr(err) {
 }
 process.on('uncaughtExceptionMonitor', err => logger.error(errStr(err)));
 process.on('unhandledRejection',
-	err => logger.warn(`Unhandled Promise rejection: ${errStr(err)}`));
+	err => logger.error(`Unhandled Promise rejection: ${errStr(err)}`));
 
 
 module.exports = logger;

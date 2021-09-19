@@ -35,6 +35,9 @@ This bot is currently only intended to work alongside
 If it proves to be a popular enough concept, I may add the ability to configure
 more hoisted games.
 
+### Hosting your own instance
+This bot is built on Discord.js 13.1.0, which requires Node.js 16.6.0 or newer.
+
 ## Fun facts
 Zerda gets its name from "Vulpes zerda", the taxonomic name for fennec foxes,
 because much like fennec foxes, this bot is tiny, fast, and makes a lot of noise.

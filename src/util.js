@@ -44,6 +44,14 @@ function detail(thing) {
 		const user = thing;
 		return `User "${user.tag}" (${user.id})`;
 	}
+	else if (thing instanceof Discord.CommandInteraction) {
+		const interaction = thing;
+		return Array.of(
+			interaction.commandName,
+			interaction.options.getSubcommandGroup(false),
+			interaction.options.getSubcommand(false)
+		).filter(x => x).join(' ');
+	}
 	else {
 		throw Error("Unsupported type " + typeof(thing));
 	}

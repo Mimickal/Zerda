@@ -5,6 +5,7 @@
   "main": "src/main.js",
   "scripts": {
     "dev": "node src/main.js dev-token",
+    "register": "node bin/register.js --token dev-token",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Mimickal",
@@ -21,6 +22,7 @@
   "dependencies": {
     "discord-command-registry": "^1.0.1",
     "discord.js": "^13.1.0",
+    "minimist": "^1.2.5",
     "winston": "^3.3.3"
   }
 }

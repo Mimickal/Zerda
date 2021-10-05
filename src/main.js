@@ -6,16 +6,15 @@
  * See LICENSE or <https://www.gnu.org/licenses/agpl-3.0.en.html> for more
  * information.
  ******************************************************************************/
-const fs = require('fs');
 const Discord = require('discord.js');
 
 const commands = require('./commands');
+const config = require('./config');
 const logger = require('./logger');
 const { detail } = require('./util');
 
 // TODO temporary easy stuff for testing.
-const TOKEN = fs.readFileSync(process.argv[2]).toString().trim();
-const CONFIG = require('../config.json');
+const CONFIG = require('../config.json'); // Needed until app ID isn't hard-coded
 const PACKAGE = require('../package.json');
 const ROLE_NAME = 'Currently Playing';
 
@@ -52,7 +51,7 @@ client.on(Events.MESSAGE_CREATE, onMessage);
 // TODO check fo API failures (like we can't contact Discord)
 
 logger.info('Logging in...');
-client.login(TOKEN).catch(err => {
+client.login(config.token).catch(err => {
 	logger.error(err.stack);
 	process.exit(1);
 });

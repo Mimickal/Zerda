@@ -3,3 +3,4 @@ node_modules/
 dev-token
 config.json
 output.log
+dev.sqlite3

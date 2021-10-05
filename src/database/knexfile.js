@@ -14,7 +14,7 @@ const DEFAULT_DB_FILE = '../../dev.sqlite3';
 module.exports = {
 	client: 'sqlite3',
 	connection: {
-		filename: config.filename ?? DEFAULT_DB_FILE,
+		filename: config.database_file ?? DEFAULT_DB_FILE,
 	},
 	migrations: {
 		directory: './migrations',

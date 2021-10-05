@@ -9,7 +9,7 @@
 const fs = require('fs');
 const Discord = require('discord.js');
 
-const handleCommandMessage = require('./commands');
+const commands = require('./commands');
 const logger = require('./logger');
 const { detail } = require('./util');
 
@@ -44,6 +44,7 @@ client.on(Events.CLIENT_READY, onReady);
 client.on(Events.PRESENCE_UPDATE, onPresenceUpdate);
 client.on(Events.GUILD_CREATE, onGuildJoin);
 client.on(Events.GUILD_DELETE, onGuildLeave);
+client.on(Events.INTERACTION_CREATE, onInteraction);
 client.on(Events.MESSAGE_CREATE, onMessage);
 
 
@@ -86,9 +87,33 @@ function onGuildLeave(guild) {
 	logger.info(`Left ${detail(guild)}`);
 }
 
+/// Events.INTERACTION_CREATE event handler
+async function onInteraction(interaction) {
+	if (!interaction.isCommand()) {
+		return;
+	}
+
+	logger.info(
+		`Command by ${detail(interaction.member)}: ${detail(interaction)}`
+	);
+
+	try {
+		commands.execute(interaction)
+	} catch (err) {
+		logger.warn(
+			`Command by ${detail(interaction.member)} failed:\n` +
+			err.message
+		);
+	}
+}
+
 /// Events.MESSAGE_CREATE event handler
+// We don't actually do anything with messages, but it's useful to log DMs anyway.
 function onMessage(msg) {
-	handleCommandMessage(client, msg);
+	if (msg.channel instanceof Discord.DMChannel) {
+		logger.info(`Received DM from ${detail(msg.author)}: ${msg.content}`);
+		return;
+	}
 }
 
 /**
@@ -131,7 +156,7 @@ async function createPlayingRole(guild) {
 	}
 	catch (err) {
 		logger.warn(
-			`Error creating Role "${ROLE_NAME}" in ${detail(guild)}`
+			`Error creating Role "${ROLE_NAME}" in ${detail(guild)}\n`
 			+ err.stack
 		);
 

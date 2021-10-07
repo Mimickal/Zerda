@@ -9,12 +9,10 @@
 const config = require('../config');
 
 // Paths are all relative to this JS file.
-const DEFAULT_DB_FILE = '../../dev.sqlite3';
-
 module.exports = {
 	client: 'sqlite3',
 	connection: {
-		filename: config.database_file ?? DEFAULT_DB_FILE,
+		filename: config.database_file,
 	},
 	migrations: {
 		directory: './migrations',

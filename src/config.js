@@ -72,9 +72,10 @@ const application_id =
  * npm knex run migrate:latest -- -- --dbfile something
  */
 let database_file =
-	cli_args.dbfile    ??
-	conf.database_file ??
-	process.env.ZERDA_DATABASE;
+	cli_args.dbfile            ??
+	conf.database_file         ??
+	process.env.ZERDA_DATABASE ??
+	'dev.sqlite3';
 if (database_file && !path.isAbsolute(database_file)) {
 	database_file = path.resolve(PROJECT_ROOT, database_file);
 }

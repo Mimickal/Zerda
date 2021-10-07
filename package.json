@@ -21,7 +21,7 @@
     "url": "https://github.com/Sigmmma/Zerda/issues"
   },
   "dependencies": {
-    "discord-command-registry": "^1.0.1",
+    "discord-command-registry": "^1.1.0",
     "discord.js": "^13.1.0",
     "knex": "^0.95.11",
     "minimist": "^1.2.5",

@@ -13,9 +13,9 @@ const Discord = require('discord.js');
  * This is helpful for logging so we can better trace production issues.
  *
  * Currently supported:
- *   GuildMember, Guild, Role, User
+ *   Application, CommandInteraction, GuildMember, Guild, Role, User
  *
- * @param thing  A supported Discord.js object.
+ * @param {*} thing  A supported Discord.js object.
  * @return string describing the thing.
  */
 function detail(thing) {
@@ -46,11 +46,16 @@ function detail(thing) {
 	}
 	else if (thing instanceof Discord.CommandInteraction) {
 		const interaction = thing;
-		return Array.of(
+		const cmd_str = Array.of(
 			interaction.commandName,
 			interaction.options.getSubcommandGroup(false),
 			interaction.options.getSubcommand(false)
 		).filter(x => x).join(' ');
+		return `Command "${cmd_str}"`;
+	}
+	else if (thing instanceof Discord.Application) {
+		const app = thing;
+		return `Application "${app.name}" (${app.id})`;
 	}
 	else {
 		throw Error("Unsupported type " + typeof(thing));

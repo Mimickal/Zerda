@@ -43,6 +43,16 @@ const COMMANDS = new SlashCommandRegistry()
 				.setRequired(true)
 			)
 		)
+		.addSubcommand(subcommand => subcommand
+			.setName('remove')
+			.setDescription('Stop tracking playing status for an application')
+			.setHandler(handlerAppRemove)
+			.addStringOption(option => option
+				.setName(APP_ID)
+				.setDescription('A game (aka application) ID')
+				.setRequired(true)
+			)
+		)
 	);
 
 /// Unknown command handler
@@ -64,30 +74,10 @@ function handlerInfo(interaction) {
 
 /// Start tracking command handler
 async function handlerAppAdd(interaction) {
-	let app;
-	try {
-		app = await Options.getApplication(interaction, APP_ID);
-	} catch (err) {
-		let reason;
+	let app = await smartGetApplication(interaction);
 
-		if (err.code === APIErrors.INVALID_FORM_BODY) {
-			reason = err.rawError.errors.application_id._errors[0].message;
-		}
-		if (err.code === APIErrors.UNKNOWN_APPLICATION) {
-			reason = err.rawError.message;
-		}
-
-		const base = `${detail(interaction)} getApplication() failed`;
-		if (reason) {
-			logger.info(`${base}: ${err.toString()}`);
-		} else {
-			logger.error(`${base} with unhandled error: ${err.toString()}`);
-		}
-
-		return interaction.reply({
-			content: `${EMOJI_BAD} ${reason ?? UNKNOWN_ERR_MSG}`,
-			ephemeral: true,
-		});
+	if (!app) {
+		return;
 	}
 
 	try {
@@ -110,6 +100,66 @@ async function handlerAppAdd(interaction) {
 
 	logger.info(`Added ${detail(app)} to ${detail(interaction.guild)}`);
 	return interaction.reply(`${EMOJI_GOOD} Now tracking ${detail(app)}`)
+}
+
+/// Stop tracking command handler
+async function handlerAppRemove(interaction) {
+	const app = await smartGetApplication(interaction);
+
+	if (!app) {
+		return;
+	}
+
+	let removed;
+	try {
+		removed = await database.removeAppFromServer(interaction.guild.id, app.id);
+	} catch (err) {
+		logger.error(`${detail(interaction)} removeAppFromServer() failed: ${err.toString()}`);
+		return interaction.reply({
+			content: `${EMOJI_BAD} ${UNKNOWN_ERR_MSG}`,
+			ephemeral: true,
+		});
+	}
+
+	if (removed) {
+		logger.info(`Removed ${detail(app)} from ${detail(interaction.guild)}`);
+		return interaction.reply(`${EMOJI_GOOD} Stopped tracking ${detail(app)}`);
+	} else {
+		logger.info(`${detail(interaction.guild)} doesn't have ${detail(app)}`);
+		return interaction.reply({
+			content: `${EMOJI_MEH} I wasn't tracking ${detail(app)} in this server`,
+			ephemeral: true,
+		});
+	}
+}
+
+// Fetches an application in an interaction, logging and responding to the
+// interaction if the lookup fails for some reason.
+async function smartGetApplication(interaction) {
+	try {
+		return await Options.getApplication(interaction, APP_ID);
+	} catch (err) {
+		let reason;
+
+		if (err.code === APIErrors.INVALID_FORM_BODY) {
+			reason = err.rawError.errors.application_id._errors[0].message;
+		}
+		if (err.code === APIErrors.UNKNOWN_APPLICATION) {
+			reason = err.rawError.message;
+		}
+
+		const base = `${detail(interaction)} getApplication() failed`;
+		if (reason) {
+			logger.info(`${base}: ${err.toString()}`);
+		} else {
+			logger.error(`${base} with unhandled error: ${err.toString()}`);
+		}
+
+		return interaction.reply({
+			content: `${EMOJI_BAD} ${reason ?? UNKNOWN_ERR_MSG}`,
+			ephemeral: true,
+		});
+	}
 }
 
 module.exports = COMMANDS;

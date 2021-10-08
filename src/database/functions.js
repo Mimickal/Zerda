@@ -29,6 +29,22 @@ function addAppToServer(guild_id, application_id) {
 	});
 }
 
+/**
+ * Removes an application from being tracked in a server.
+ * @param {Snowflake} guild_id A Discord Guild ID.
+ * @param {Snowflake} application_id A Discord Application ID.
+ * @returns {Promise<Number>} Resolves to number of deleted rows.
+ */
+function removeAppFromServer(guild_id, application_id) {
+	validateDiscordId(guild_id, 'guild_id');
+	validateDiscordId(application_id, 'application_id');
+
+	return knex(APPS).where({
+		[GUILD_ID]: guild_id,
+		[APP_ID]: application_id,
+	}).delete();
+}
+
 // Not a perfect implementation, but good enough for our purposes.
 function validateDiscordId(value, name) {
 	if (!value.match(/\d+/)) {
@@ -38,4 +54,5 @@ function validateDiscordId(value, name) {
 
 module.exports = {
 	addAppToServer,
+	removeAppFromServer,
 };

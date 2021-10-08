@@ -19,7 +19,6 @@ const PACKAGE = require('../package.json');
 const ROLE_NAME = 'Currently Playing';
 
 // TODO this is getting big like the logger. Maybe pull this out to its own file
-// TODO handle sharding if we want this in multiple servers
 // Set up the Discord client
 const Intents = Discord.Intents.FLAGS;
 const client = new Discord.Client({
@@ -92,17 +91,11 @@ async function onInteraction(interaction) {
 		return;
 	}
 
-	logger.info(
-		`Command by ${detail(interaction.member)}: ${detail(interaction)}`
-	);
-
+	logger.info(`${detail(interaction)} by ${detail(interaction.member)}...`);
 	try {
-		commands.execute(interaction)
+		await commands.execute(interaction);
 	} catch (err) {
-		logger.warn(
-			`Command by ${detail(interaction.member)} failed:\n` +
-			err.message
-		);
+		logger.warn(`${detail(interaction)} error fell through: ${err.toString()}`);
 	}
 }
 

@@ -15,6 +15,8 @@ const fs = require('fs');
 const minimist = require('minimist');
 const path = require('path');
 
+const logger = require('./logger');
+
 function usage() {
 	console.log('Usage:\n\n' +
 		'\tapp     The bot application ID.\n' +
@@ -104,8 +106,13 @@ if (cli_args.token) {
 }
 
 module.exports = Object.freeze({
+	PROJECT_ROOT: PROJECT_ROOT,
 	application_id: application_id,
 	database_file: database_file,
 	guild_id: guild_id,
 	token: token,
 });
+
+const safe_config = Object.assign({}, module.exports);
+if (safe_config.token) safe_config.token = '<REDACTED>';
+logger.debug(`Using config ${JSON.stringify(safe_config)}`);

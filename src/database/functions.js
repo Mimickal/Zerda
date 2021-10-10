@@ -17,9 +17,10 @@ const APP_ID = 'app_id';
  * Adds a new application to track for a server.
  * @param {Snowflake} guild_id A Discord Guild ID.
  * @param {Snowflake} application_id A Discord Application ID.
+ * @throws {Error} For invalid Guild or Application IDs.
  * @returns {Promise<*>} Resolved value not meaningful.
  */
-function addAppToServer(guild_id, application_id) {
+async function addAppToServer(guild_id, application_id) {
 	validateDiscordId(guild_id, 'guild_id');
 	validateDiscordId(application_id, 'application_id');
 
@@ -33,9 +34,10 @@ function addAppToServer(guild_id, application_id) {
  * Removes an application from being tracked in a server.
  * @param {Snowflake} guild_id A Discord Guild ID.
  * @param {Snowflake} application_id A Discord Application ID.
+ * @throws {Error} For invalid Guild or Application IDs.
  * @returns {Promise<Number>} Resolves to number of deleted rows.
  */
-function removeAppFromServer(guild_id, application_id) {
+async function removeAppFromServer(guild_id, application_id) {
 	validateDiscordId(guild_id, 'guild_id');
 	validateDiscordId(application_id, 'application_id');
 

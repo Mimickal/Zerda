@@ -53,6 +53,11 @@ const COMMANDS = new SlashCommandRegistry()
 				.setRequired(true)
 			)
 		)
+		.addSubcommand(subcommand => subcommand
+			.setName('list')
+			.setDescription('List all applications tracked on this server')
+			.setHandler(handlerAppList)
+		)
 	);
 
 /// Unknown command handler
@@ -131,6 +136,36 @@ async function handlerAppRemove(interaction) {
 			ephemeral: true,
 		});
 	}
+}
+
+/// List apps command handler
+async function handlerAppList(interaction) {
+	let app_ids;
+	try {
+		app_ids = await database.getAppsInServer(interaction.guild.id);
+	} catch (err) {
+		logger.error(`${detail(interaction)} getAppsInServer() failed: ${err.toString()}`);
+		return interaction.reply({
+			content: `${EMOJI_BAD} ${UNKNOWN_ERR_MSG}`,
+			ephemeral: true,
+		});
+	}
+
+	const apps = await Promise.all(app_ids.map(app_id => {
+		// Dirty hack. Options.getApplication takes an interaction, not an ID.
+		interaction.options._hoistedOptions = [{
+			name: APP_ID,
+			type: 'STRING',
+			value: app_id,
+		}];
+		return smartGetApplication(interaction);
+	}));
+
+	// TODO this can hit the max message length limit
+	return interaction.reply(
+		'I am tracking these apps in this server:\n' +
+		apps.map(app => `- ${app.name} (${app.id})\n`)
+	);
 }
 
 // Fetches an application in an interaction, logging and responding to the

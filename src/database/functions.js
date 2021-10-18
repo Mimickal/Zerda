@@ -31,6 +31,21 @@ async function addAppToServer(guild_id, application_id) {
 }
 
 /**
+ * Gets all the applications tracked for a server.
+ * @param {Snowflake} guild_id A Discord Guild ID.
+ * @throws {Error} For invalid Guild ID.
+ * @returns {Promise<Snowflake[]>} Resolves to array of Discord Application IDs.
+ */
+async function getAppsInServer(guild_id) {
+	validateDiscordId(guild_id, 'guild_id');
+
+	return knex(APPS)
+		.select(APP_ID)
+		.where(GUILD_ID, guild_id)
+		.then(rows => rows.map(row => row[APP_ID]));
+}
+
+/**
  * Removes an application from being tracked in a server.
  * @param {Snowflake} guild_id A Discord Guild ID.
  * @param {Snowflake} application_id A Discord Application ID.
@@ -56,5 +71,6 @@ function validateDiscordId(value, name) {
 
 module.exports = {
 	addAppToServer,
+	getAppsInServer,
 	removeAppFromServer,
 };

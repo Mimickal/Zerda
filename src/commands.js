@@ -161,11 +161,15 @@ async function handlerAppList(interaction) {
 		return smartGetApplication(interaction);
 	}));
 
-	// TODO this can hit the max message length limit
-	return interaction.reply(
-		'I am tracking these apps in this server:\n' +
-		apps.map(app => `- ${app.name} (${app.id})\n`)
-	);
+	if (apps.length === 0) {
+		return interaction.reply('I am not tracking any apps in this server yet!');
+	} else {
+		// TODO this can hit the max message length limit
+		return interaction.reply(
+			'I am tracking these apps in this server:\n' +
+			apps.map(app => `- ${app.name} (${app.id})\n`)
+		);
+	}
 }
 
 // Fetches an application in an interaction, logging and responding to the

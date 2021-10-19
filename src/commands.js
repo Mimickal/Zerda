@@ -14,6 +14,7 @@ const {
 
 const database = require('./database');
 const logger = require('./logger');
+const main = require('./main'); // FIXME this is gross, pull out to events file
 const { detail } = require('./util');
 
 const APP_ID = 'application-id';
@@ -104,7 +105,11 @@ async function handlerAppAdd(interaction) {
 	}
 
 	logger.info(`Added ${detail(app)} to ${detail(interaction.guild)}`);
-	return interaction.reply(`${EMOJI_GOOD} Now tracking ${detail(app)}`)
+	logger.info(`Checking all members of ${detail(interaction.guild)} for added app`);
+	return Promise.all([
+		interaction.reply(`${EMOJI_GOOD} Now tracking ${detail(app)}`),
+		main.assignRolesInGuild(interaction.guild),
+	]);
 }
 
 /// Stop tracking command handler
@@ -128,7 +133,11 @@ async function handlerAppRemove(interaction) {
 
 	if (removed) {
 		logger.info(`Removed ${detail(app)} from ${detail(interaction.guild)}`);
-		return interaction.reply(`${EMOJI_GOOD} Stopped tracking ${detail(app)}`);
+		logger.info(`Checking all members of ${detail(interaction.guild)} for removed app`);
+		return Promise.all([
+			interaction.reply(`${EMOJI_GOOD} Stopped tracking ${detail(app)}`),
+			main.assignRolesInGuild(interaction.guild),
+		]);
 	} else {
 		logger.info(`${detail(interaction.guild)} doesn't have ${detail(app)}`);
 		return interaction.reply({

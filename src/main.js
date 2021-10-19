@@ -96,7 +96,7 @@ async function onInteraction(interaction) {
 	try {
 		await commands.execute(interaction);
 	} catch (err) {
-		logger.warn(`${detail(interaction)} error fell through: ${err.toString()}`);
+		logger.error(`${detail(interaction)} error fell through: ${err.toString()}`);
 	}
 }
 
@@ -317,3 +317,8 @@ async function getPlayingRoleForGuild(guild) {
 
 	return role;
 }
+
+// Assign individual field to avoid circular dependency issue
+// TODO probably pull this out to another file.
+module.exports.assignRolesInGuild = assignRolesInGuild;
+

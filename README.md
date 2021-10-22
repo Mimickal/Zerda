@@ -7,6 +7,7 @@ to more easily find matches and join each others' matches from Discord.
 Required:
 1. [Invite the bot to your server]() (link coming soon)
 1. Give the bot the `Manage Roles` permission.
+1. Add some games to track (See [Commands](#commands))
 
 Optional:
 - Change the color of the "Currently Playing" role
@@ -21,11 +22,35 @@ Optional:
 - The bot's role needs to be sorted above the "Currently Playing" role, or it
 will not be allowed to assign the role.
 
+### Commands
+This bot uses slash commands exclusively. You will also need to know your game's
+(aka Application's) ID. See [Where can I find my Application ID](
+https://support-dev.discord.com/hc/en-us/articles/360028717192-Where-can-I-find-my-Application-Team-Server-ID-)
+
+- **Start tracking an application**
+  - `/app add application-id: <Discord app ID here>`
+- **Stop tracking an application**
+  - `/app remove application-id: <Discord app ID here>`
+- **List all of the applications being tracked in the server**
+  - `/app list`
+
 ## How it works
 When the bot joins your server, it will create a role called "Currently
 Playing" that is configured to display users separately. Anybody playing a
 supported game will be assigned this role. If they stop playing, go offline, or
 change their status to "Do Not Disturb", the bot will remove the role.
+
+### What if I want the bot to stop tracking my status?
+The bot will not assign you the "Currently Playing" role if you do any of the
+following:
+
+- Disable "Display current activity as a status message" in your Discord settings.
+- Change status to "Do Not Disturb"
+- Change status to "Invisible" (or actually go offline)
+
+### What if I want to remove the bot from my server?
+Kicking the bot and deleting the "Now Playing" role will effectively clean up
+all traces of the bot in your server.
 
 
 

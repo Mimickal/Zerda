@@ -27,13 +27,7 @@ Playing" that is configured to display users separately. Anybody playing a
 supported game will be assigned this role. If they stop playing, go offline, or
 change their status to "Do Not Disturb", the bot will remove the role.
 
-### Supported Games (Application ID)
-- Halo: Custom Edition (496775885249314885)
 
-This bot is currently only intended to work alongside
-[Vulpes](https://github.com/Sigmmma/Vulpes), the Halo: CE engine extension mod.
-If it proves to be a popular enough concept, I may add the ability to configure
-more hoisted games.
 
 ### Hosting your own instance
 This bot is built on Discord.js 13.1.0, which requires Node.js 16.6.0 or newer.

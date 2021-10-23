@@ -52,7 +52,34 @@ following:
 Kicking the bot and deleting the "Now Playing" role will effectively clean up
 all traces of the bot in your server.
 
+### Information storage disclosure
+This bot logs the following data:
 
+- The name and ID of servers it is in
+- The ID of applications tracked per server
+- The name, nickname, and ID of server members who,
+  - Start a tracked activity
+  - Stop a tracked activity
+  - Issue a command
+- The command itself
+- The content of Direct Messages (messages sent via DMs. No server messages are
+  logged)
+
+These logs are stored securely, privately, and used solely for troubleshooting.
+
+#### Why log this stuff?
+In the past, I've had other bots log nothing other than actual errors (See the
+commit history of https://github.com/Mimickal/ReactionRoleBot). I found out the
+hard way that this is not enough information to help people troubleshoot issues,
+especially when the bot is in many servers, most of which are private.
+Having this additional information allows me to ask someone "What's your server
+ID?" instead of asking 20+ questions, or worse, needing to join their server and
+dig through their settings.
+
+#### Requesting your information (or deleting it)
+Logs and database entries for users and servers can be made available (or
+deleted) upon request. [Join the support server](https://discord.gg/7UBT8SK) to
+file your request.
 
 ### Hosting your own instance
 This bot is built on Discord.js 13.1.0, which requires Node.js 16.6.0 or newer.

@@ -6,7 +6,11 @@
  * See LICENSE or <https://www.gnu.org/licenses/agpl-3.0.en.html> for more
  * information.
  ******************************************************************************/
-const { APIErrors } = require('discord.js').Constants;
+const {
+	Constants,
+	Permissions,
+} = require('discord.js');
+const { APIErrors } = Constants;
 const {
 	Options,
 	SlashCommandRegistry,
@@ -80,6 +84,12 @@ function handlerInfo(interaction) {
 
 /// Start tracking command handler
 async function handlerAppAdd(interaction) {
+	const reply = enforceAdmin(interaction)
+
+	if (reply) {
+		return reply;
+	}
+
 	let app = await smartGetApplication(interaction);
 
 	if (!app) {
@@ -114,6 +124,12 @@ async function handlerAppAdd(interaction) {
 
 /// Stop tracking command handler
 async function handlerAppRemove(interaction) {
+	const reply = enforceAdmin(interaction)
+
+	if (reply) {
+		return reply;
+	}
+
 	const app = await smartGetApplication(interaction);
 
 	if (!app) {
@@ -179,6 +195,19 @@ async function handlerAppList(interaction) {
 			apps.map(app => `- ${app.name} (${app.id})\n`)
 		);
 	}
+}
+
+// Checks that the interaction's member has permission to issue a command
+function enforcePermission(interaction) {
+	if (interaction.member.permissions.has(Permissions.FLAGS.ADMINISTRATOR)) {
+		return;
+	}
+
+	logger.info(`${detail(interaction.member)} is not an admin`);
+	return interaction.reply({
+		content: `${EMOJI_BAD} Sorry, only admins can use this command.`,
+		ephemeral: true,
+	});
 }
 
 // Fetches an application in an interaction, logging and responding to the

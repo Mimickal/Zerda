@@ -27,9 +27,9 @@ This bot uses slash commands exclusively. You will also need to know your game's
 (aka Application's) ID. See [Where can I find my Application ID](
 https://support-dev.discord.com/hc/en-us/articles/360028717192-Where-can-I-find-my-Application-Team-Server-ID-)
 
-- **Start tracking an application**
+- **Start tracking an application** (Requires Admin)
   - `/app add application-id: <Discord app ID here>`
-- **Stop tracking an application**
+- **Stop tracking an application** (Requires Admin)
   - `/app remove application-id: <Discord app ID here>`
 - **List all of the applications being tracked in the server**
   - `/app list`

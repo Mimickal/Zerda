@@ -13,11 +13,15 @@
 // 4. Environment variables
 const fs = require('fs');
 const minimist = require('minimist');
+const path = require('path');
+
+const logger = require('./logger');
 
 function usage() {
 	console.log('Usage:\n\n' +
 		'\tapp     The bot application ID.\n' +
 		'\tconfig  Use this JSON config file instead of the default.\n' +
+		'\tdbfile  The SQLite3 database file to use.\n' +
 		'\tguild   A Discord guild ID. Causes commands to be registered for\n' +
 		'\t        just this guild. If unset, commands are registered globally.\n' +
 		'\ttoken   A file containing a bot token.\n' +
@@ -26,15 +30,33 @@ function usage() {
 	process.exit(0);
 }
 
-const cli_args = minimist(process.argv.slice(2), {
+const PROJECT_ROOT = fs.realpathSync(path.join(__dirname, '..'));
+
+// This two-part parse silliness lets us provide args during knex commands using
+// double-double dashes (e.g. -- -- --some-option)
+let cli_args = minimist(process.argv.slice(2), {
 	string: ['app', 'guild'],
 });
+const leftover = cli_args._;
+delete cli_args._;
+cli_args = {
+	...cli_args,
+	...minimist(leftover),
+};
 
 if (cli_args.help) {
 	usage();
 }
 
-const conf = require(cli_args.config ?? '../config.json');
+// Load config relative to project root, since knex overrides cwd
+let conf_file =
+	cli_args.config          ??
+	process.env.ZERDA_CONFIG ??
+	'config.json';
+if (!path.isAbsolute(conf_file)) {
+	conf_file = path.resolve(PROJECT_ROOT, conf_file);
+}
+const conf = require(conf_file);
 
 /**
  * The application ID of the bot. This is typically the Discord bot user's ID.
@@ -43,6 +65,22 @@ const application_id =
 	cli_args.app        ??
 	conf.application_id ??
 	process.env.ZERDA_APP_ID;
+
+/**
+ * The SQLite3 database file for the bot. If this is not set, a local dev
+ * database is used instead.
+ *
+ * Can be provided during knex commands using double-double dashes, e.g.:
+ * npm knex run migrate:latest -- -- --dbfile something
+ */
+let database_file =
+	cli_args.dbfile            ??
+	conf.database_file         ??
+	process.env.ZERDA_DATABASE ??
+	'dev.sqlite3';
+if (database_file && !path.isAbsolute(database_file)) {
+	database_file = path.resolve(PROJECT_ROOT, database_file);
+}
 
 /**
  * A guild ID to register commands for. This is only really useful for
@@ -68,7 +106,13 @@ if (cli_args.token) {
 }
 
 module.exports = Object.freeze({
+	PROJECT_ROOT: PROJECT_ROOT,
 	application_id: application_id,
+	database_file: database_file,
 	guild_id: guild_id,
 	token: token,
 });
+
+const safe_config = Object.assign({}, module.exports);
+if (safe_config.token) safe_config.token = '<REDACTED>';
+logger.debug(`Using config ${JSON.stringify(safe_config)}`);

@@ -10,6 +10,7 @@ const Discord = require('discord.js');
 
 const commands = require('./commands');
 const config = require('./config');
+const database = require('./database');
 const logger = require('./logger');
 const { detail } = require('./util');
 
@@ -19,7 +20,6 @@ const PACKAGE = require('../package.json');
 const ROLE_NAME = 'Currently Playing';
 
 // TODO this is getting big like the logger. Maybe pull this out to its own file
-// TODO handle sharding if we want this in multiple servers
 // Set up the Discord client
 const Intents = Discord.Intents.FLAGS;
 const client = new Discord.Client({
@@ -92,17 +92,11 @@ async function onInteraction(interaction) {
 		return;
 	}
 
-	logger.info(
-		`Command by ${detail(interaction.member)}: ${detail(interaction)}`
-	);
-
+	logger.info(`${detail(interaction)} by ${detail(interaction.member)}...`);
 	try {
-		commands.execute(interaction)
+		await commands.execute(interaction);
 	} catch (err) {
-		logger.warn(
-			`Command by ${detail(interaction.member)} failed:\n` +
-			err.message
-		);
+		logger.error(`${detail(interaction)} error fell through: ${err.toString()}`);
 	}
 }
 
@@ -213,19 +207,36 @@ async function assignRolesInGuild(guild) {
  * @param member  A Discord.js GuildMember object.
  */
 async function assignRolesToMember(member) {
+	try {
+		if (await shouldAssignRole(member)) {
+			await addRole(member);
+		} else {
+			await removeRole(member);
+		}
+	} catch (err) {
+		logger.error('Something went wrong in shouldAssignRole():', err);
+		await removeRole(member); // Fail safe
+	}
+}
+
+// Checks a GuildMember's presence to see if we should give them the playing role.
+async function shouldAssignRole(member) {
 	const presence = member.presence;
-	if (
-		// FIXME this is a mess. Probably pull this out to another function
-		presence // Can be null for offline members
-		&& presence.activities.find(activity =>
-			activity.applicationId === CONFIG.halo_app_id)
-		&& presence.status !== 'offline' && presence.status !== 'dnd'
-	) {
-		await addRole(member);
+
+	// Check this stuff first to possibly short-circuit before database lookup.
+	// Presence can be null for offline members.
+	if (!presence || Array.of('dnd', 'offline').includes(presence.status)) {
+		return false;
 	}
-	else {
-		await removeRole(member);
-	}
+
+	// Make caller deal with any error thrown here
+	const server_apps = await database.getAppsInServer(member.guild.id);
+	const presence_app_map = new Map(
+		presence.activities.map(act => [act.applicationId, true])
+	);
+
+	// Make this O(n^2) operation short-circuit as soon as possible.
+	return !!server_apps.find(app_id => presence_app_map.get(app_id));
 }
 
 /**
@@ -306,3 +317,8 @@ async function getPlayingRoleForGuild(guild) {
 
 	return role;
 }
+
+// Assign individual field to avoid circular dependency issue
+// TODO probably pull this out to another file.
+module.exports.assignRolesInGuild = assignRolesInGuild;
+

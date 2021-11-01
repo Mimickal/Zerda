@@ -5,6 +5,9 @@
   "main": "src/main.js",
   "scripts": {
     "dev": "ZERDA_DATABASE=dev.sqlite3 node src/main.js",
+    "docker:daemon:start": "npm run docker:start -- --detach",
+    "docker:daemon:stop": "docker-compose down",
+    "docker:start": "docker-compose up --build",
     "knex": "npx knex --knexfile src/database/knexfile.js",
     "register": "node bin/register.js",
     "start": "NODE_ENV=prod node src/main.js",

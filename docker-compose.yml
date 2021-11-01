@@ -1,0 +1,12 @@
+version: '3.8'
+services:
+  bot:
+    build: .
+    volumes:
+      - type: volume
+        source: database
+        # Keep in sync with Dockerfile
+        target: /var/database
+volumes:
+  database:
+    name: 'zerda'

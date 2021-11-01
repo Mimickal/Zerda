@@ -1,0 +1,15 @@
+# Downloaded dependencies
+node_modules/
+
+# Dev files
+*.swp
+dev-token
+
+# Generated files
+dev.sqlite3
+output.log
+
+# Non-build project files
+docker-compose.yml
+Dockerfile
+README.md

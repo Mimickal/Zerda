@@ -4,9 +4,10 @@
   "description": "Discord bot that assigns roles to people who are playing a game, so they sort higher in the users list",
   "main": "src/main.js",
   "scripts": {
-    "dev": "node src/main.js dev-token",
+    "dev": "ZERDA_DATABASE=dev.sqlite3 node src/main.js",
     "knex": "npx knex --knexfile src/database/knexfile.js",
     "register": "node bin/register.js",
+    "start": "NODE_ENV=prod node src/main.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Mimickal",

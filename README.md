@@ -83,6 +83,61 @@ file your request.
 
 ### Hosting your own instance
 This bot is built on Discord.js 13.1.0, which requires Node.js 16.6.0 or newer.
+If this is an issue, Docker configuration is also provided for running the bot
+in a container.
+
+#### Starting steps
+1. Create a bot account
+2. Create a `config.json` file in the project root with the following:
+  ```json
+  {
+    "application_id": "your bot app ID",
+    "token": "your bot token"
+  }
+  ```
+3. Install dependencies
+  ```bash
+  npm ci
+  ```
+
+4. Register commands with Discord's API. This step requires Node.js on your
+system, but will (probably) work with an older version.
+  ```bash
+  npm run register
+  ```
+
+#### Running with Docker
+You will need both Docker and docker-compose installed.
+
+5. Build/start the bot using docker-compose.
+  ```bash
+  # Start in foreground
+  npm run docker:start
+
+  # OR
+  # Start in background as daemon
+  npm run docker:daemon:start
+  ```
+6. (optional) Stop a daemonized bot.
+  ```bash
+  npm run docker:daemon:stop
+  ```
+
+#### Running without Docker
+5. (optional) Change database file location. Add the following to `config.json`:
+  ```json
+  {
+    "database_file": "path to your SQLite3 database file"
+  }
+  ```
+6. Set up the database
+  ```bash
+  npm run knex migrate:latest
+  ```
+7. Start the bot
+  ```bash
+  npm run start
+  ```
 
 ## Fun facts
 Zerda gets its name from "Vulpes zerda", the taxonomic name for fennec foxes,

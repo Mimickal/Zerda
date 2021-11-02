@@ -4,9 +4,13 @@
   "description": "Discord bot that assigns roles to people who are playing a game, so they sort higher in the users list",
   "main": "src/main.js",
   "scripts": {
-    "dev": "node src/main.js dev-token",
+    "dev": "ZERDA_DATABASE=dev.sqlite3 node src/main.js",
+    "docker:daemon:start": "npm run docker:start -- --detach",
+    "docker:daemon:stop": "docker-compose down",
+    "docker:start": "docker-compose up --build",
     "knex": "npx knex --knexfile src/database/knexfile.js",
     "register": "node bin/register.js",
+    "start": "NODE_ENV=prod node src/main.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Mimickal",

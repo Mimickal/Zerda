@@ -1,6 +1,7 @@
 {
   "name": "zerda",
-  "version": "0.1.0",
+  "version": "0.1.0-dev",
+  "private": true,
   "description": "Discord bot that assigns roles to people who are playing a game, so they sort higher in the users list",
   "main": "src/main.js",
   "scripts": {
@@ -13,16 +14,15 @@
     "start": "NODE_ENV=prod node src/main.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "Mimickal",
+  "author": "Mimickal <mimickal.dev@gmail.com>",
   "license": "AGPL-3.0",
-  "private": true,
-  "homepage": "https://github.com/Sigmmma/Zerda",
+  "homepage": "https://github.com/Mimickal/Zerda",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Sigmmma/Zerda.git"
+    "url": "https://github.com/Mimickal/Zerda.git"
   },
   "bugs": {
-    "url": "https://github.com/Sigmmma/Zerda/issues"
+    "url": "https://github.com/Mimickal/Zerda/issues"
   },
   "dependencies": {
     "discord-command-registry": "^1.1.0",

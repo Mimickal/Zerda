@@ -6,6 +6,7 @@
  * See LICENSE or <https://www.gnu.org/licenses/agpl-3.0.en.html> for more
  * information.
  ******************************************************************************/
+// @ts-expect-error Knex needs this to be a JS file. We only use it here.
 import knexfile from './knexfile';
 import setupKnex from 'knex';
 const knex = setupKnex(knexfile);

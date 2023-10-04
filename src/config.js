@@ -15,8 +15,6 @@ const fs = require('fs');
 const minimist = require('minimist');
 const path = require('path');
 
-const logger = require('./logger');
-
 function usage() {
 	console.log('Usage:\n\n' +
 		'\tapp     The bot application ID.\n' +
@@ -63,8 +61,8 @@ const conf = require(conf_file);
  */
 const application_id =
 	cli_args.app        ??
-	conf.application_id ??
-	process.env.ZERDA_APP_ID;
+	conf.app ??
+	process.env.ZERDA_APP;
 
 /**
  * The SQLite3 database file for the bot. If this is not set, a local dev
@@ -88,7 +86,7 @@ if (database_file && !path.isAbsolute(database_file)) {
  */
 const guild_id =
 	cli_args.guild     ??
-	conf.test_guild_id ??
+	conf.guild ??
 	process.env.ZERDA_GUILD_ID;
 
 /**
@@ -112,7 +110,3 @@ module.exports = Object.freeze({
 	guild_id: guild_id,
 	token: token,
 });
-
-const safe_config = Object.assign({}, module.exports);
-if (safe_config.token) safe_config.token = '<REDACTED>';
-logger.debug(`Using config ${JSON.stringify(safe_config)}`);

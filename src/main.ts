@@ -7,10 +7,15 @@
  * information.
  ******************************************************************************/
 import * as Discord from 'discord.js';
+import { createLogger, GlobalLogger, startupMsg } from '@mimickal/discord-logging';
 
 const config = require('./config');
+
+// Need to setup logger before loading modules that use it.
+const logger = createLogger({ filename: config.log_file });
+GlobalLogger.setGlobalLogger(logger);
+
 import * as events from './events';
-const logger = require('./logger');
 
 // TODO move this to config
 const PACKAGE = require('../package.json');
@@ -41,9 +46,9 @@ client.on(Discord.Events.MessageCreate, events.onMessage);
 
 // TODO Log if we ever message someone.
 // TODO check fo API failures (like we can't contact Discord)
-// TODO standard login message
-logger.info('Logging in...');
+logger.info(startupMsg(PACKAGE.version, config));
+
 client.login(config.token).catch(err => {
-	logger.error(err.stack);
+	logger.error('Failed to log in!', err);
 	process.exit(1);
 });

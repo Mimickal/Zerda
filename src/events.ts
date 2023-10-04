@@ -14,9 +14,9 @@ import {
 	Message,
 	Presence,
 } from 'discord.js';
+import { detail, GlobalLogger, loginMsg } from '@mimickal/discord-logging';
 
 import commands from './commands';
-const logger = require('./logger');
 import {
 	assignRoleAllGuilds,
 	assignRole,
@@ -24,13 +24,19 @@ import {
 	createPlayingRole,
 	assignRoleAllMembers,
 } from './role';
-const { detail } = require('./util');
+
+const logger = GlobalLogger.logger;
 
 /**
  * {@link Events.ClientReady} event handler.
  */
 export async function onReady(client: Client): Promise<void> {
-	logger.info(`Logged in as ${detail(client.user)}`);
+	if (!client.user) {
+		logger.error('Somehow logged in with null client user. Stopping.');
+		process.exit(1);
+	}
+
+	logger.info(loginMsg(client.user));
 
 	// TODO catch error if we don't have permissions
 	await createPlayingRoleAllGuilds(client);

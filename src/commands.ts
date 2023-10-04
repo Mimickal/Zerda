@@ -23,11 +23,12 @@ import {
 	SlashCommandRegistry,
 	WithGuild,
 } from 'discord-command-registry';
+import { detail, GlobalLogger } from '@mimickal/discord-logging';
 
 import * as database from './database';
-const logger = require('./logger');
 import { assignRoleAllMembers } from './role';
-const { detail } = require('./util');
+
+const logger = GlobalLogger.logger;
 
 const APP_ID = 'application-id';
 const EMOJI_BAD = ':no_entry:';

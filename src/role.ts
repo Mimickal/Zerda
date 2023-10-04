@@ -9,10 +9,11 @@
 import {
 	Client, Guild, GuildMember, PresenceStatus, Role,
 } from 'discord.js';
+import { detail, GlobalLogger } from '@mimickal/discord-logging';
 
 import * as database from './database';
-const logger = require('./logger');
-const { detail } = require('./util');
+
+const logger = GlobalLogger.logger;
 
 // TODO move this to config.
 const ROLE_NAME = 'Currently Playing';
@@ -90,7 +91,7 @@ export async function assignRoleAllMembers(guild: Guild): Promise<number> {
 
 	// TODO check if guild is available before doing this. (in guild?)
 	await Promise.all(members.map(member => {
-		logger.debug(`Checking ${detail(member)}`);
+		logger.debug(`Checking ${detail(member)} in ${detail(guild)}`);
 
 		return assignRole(member);
 	}));

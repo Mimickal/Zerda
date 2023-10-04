@@ -22,6 +22,7 @@ function usage() {
 		'\tdbfile  The SQLite3 database file to use.\n' +
 		'\tguild   A Discord guild ID. Causes commands to be registered for\n' +
 		'\t        just this guild. If unset, commands are registered globally.\n' +
+		'\tlogfile The log file to use.\n' +
 		'\ttoken   A file containing a bot token.\n' +
 		'\thelp    Show this help text and exit.\n'
 	);
@@ -60,8 +61,8 @@ const conf = require(conf_file);
  * The application ID of the bot. This is typically the Discord bot user's ID.
  */
 const application_id =
-	cli_args.app        ??
-	conf.app ??
+	cli_args.app ??
+	conf.app     ??
 	process.env.ZERDA_APP;
 
 /**
@@ -85,9 +86,19 @@ if (database_file && !path.isAbsolute(database_file)) {
  * registering commands for a single guild, during testing.
  */
 const guild_id =
-	cli_args.guild     ??
-	conf.guild ??
+	cli_args.guild ??
+	conf.guild     ??
 	process.env.ZERDA_GUILD_ID;
+
+/**
+ * The log output file for the bot. If this is not set, a local dev log is
+ * used instead.
+ */
+const log_file =
+	cli_args.logfile          ??
+	conf.log_file             ??
+	process.env.ZERDA_LOGFILE ??
+	'dev.log';
 
 /**
  * The bot's Discord token, used for log in.
@@ -108,5 +119,6 @@ module.exports = Object.freeze({
 	application_id: application_id,
 	database_file: database_file,
 	guild_id: guild_id,
+	log_file: log_file,
 	token: token,
 });

@@ -4,6 +4,9 @@
   "private": true,
   "description": "Discord bot that assigns roles to people who are playing a game, so they sort higher in the users list",
   "main": "src/main.js",
+  "engines": {
+    "node": ">=16.11.0"
+  },
   "scripts": {
     "dev": "ZERDA_DATABASE=dev.sqlite3 node src/main.js",
     "docker:daemon:start": "npm run docker:start -- --detach",
@@ -25,8 +28,8 @@
     "url": "https://github.com/Mimickal/Zerda/issues"
   },
   "dependencies": {
-    "discord-command-registry": "^1.1.0",
-    "discord.js": "^13.1.0",
+    "discord-command-registry": "^3.1.1",
+    "discord.js": "^14.13.0",
     "knex": "^2.5.1",
     "minimist": "^1.2.5",
     "sqlite3": "^5.1.6",

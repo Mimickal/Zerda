@@ -11,12 +11,10 @@ import {
 } from 'discord.js';
 import { detail, GlobalLogger } from '@mimickal/discord-logging';
 
+import { ROLE_NAME } from './config';
 import * as database from './database';
 
 const logger = GlobalLogger.logger;
-
-// TODO move this to config.
-const ROLE_NAME = 'Currently Playing';
 
 /**
  * Applies {@link createPlayingRole} to every Guild this bot can see.

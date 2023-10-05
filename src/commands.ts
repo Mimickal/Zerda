@@ -25,6 +25,7 @@ import {
 } from 'discord-command-registry';
 import { detail, GlobalLogger } from '@mimickal/discord-logging';
 
+import { Package } from './config';
 import * as database from './database';
 import { assignRoleAllMembers } from './role';
 
@@ -35,7 +36,6 @@ const EMOJI_BAD = ':no_entry:';
 const EMOJI_MEH = ':ok:';
 const EMOJI_GOOD = ':white_check_mark:';
 const UNKNOWN_ERR_MSG = "Something went wrong. I logged the issue so someone can fix it.";
-const PACKAGE = require('../package.json');
 
 const COMMANDS = new SlashCommandRegistry()
 	.setDefaultHandler(handlerDefault)
@@ -100,9 +100,9 @@ async function handlerNotAdmin(interaction: CommandInteraction): Promise<void> {
 /** Info command handler. Prints bot version, source code, and some fun stats. */
 async function handlerInfo(interaction: CommandInteraction): Promise<void> {
 	await interaction.reply(
-		`I am a ${PACKAGE.description}.\n` +
-		`**Running version:** ${PACKAGE.version}\n` +
-		`**Source code:** ${PACKAGE.repository.url}\n`
+		`I am a ${Package.description}.\n` +
+		`**Running version:** ${Package.version}\n` +
+		`**Source code:** ${Package.homepage}\n`
 	);
 }
 

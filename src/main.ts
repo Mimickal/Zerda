@@ -9,22 +9,19 @@
 import * as Discord from 'discord.js';
 import { createLogger, GlobalLogger, startupMsg } from '@mimickal/discord-logging';
 
-const config = require('./config');
+import { Config, Package } from './config';
 
 // Need to setup logger before loading modules that use it.
-const logger = createLogger({ filename: config.log_file });
+const logger = createLogger({ filename: Config.log_file });
 GlobalLogger.setGlobalLogger(logger);
 
 import * as events from './events';
-
-// TODO move this to config
-const PACKAGE = require('../package.json');
 
 // Set up the Discord client
 const client = new Discord.Client({
 	presence: {
 		activities: [{
-			name: `Version ${PACKAGE.version}`,
+			name: `Version ${Package.version}`,
 			type: Discord.ActivityType.Playing,
 		}],
 	},
@@ -46,9 +43,9 @@ client.on(Discord.Events.MessageCreate, events.onMessage);
 
 // TODO Log if we ever message someone.
 // TODO check fo API failures (like we can't contact Discord)
-logger.info(startupMsg(PACKAGE.version, config));
+logger.info(startupMsg(Package.version, Config));
 
-client.login(config.token).catch(err => {
+client.login(Config.token).catch(err => {
 	logger.error('Failed to log in!', err);
 	process.exit(1);
 });

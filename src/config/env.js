@@ -29,7 +29,7 @@ function usage() {
 	process.exit(0);
 }
 
-const PROJECT_ROOT = fs.realpathSync(path.join(__dirname, '..'));
+const PROJECT_ROOT = fs.realpathSync(path.join(__dirname, '..', '..'));
 
 // This two-part parse silliness lets us provide args during knex commands using
 // double-double dashes (e.g. -- -- --some-option)
@@ -94,11 +94,14 @@ const guild_id =
  * The log output file for the bot. If this is not set, a local dev log is
  * used instead.
  */
-const log_file =
+let log_file =
 	cli_args.logfile          ??
 	conf.log_file             ??
 	process.env.ZERDA_LOGFILE ??
 	'dev.log';
+if (!path.isAbsolute(log_file)) {
+	log_file = path.resolve(PROJECT_ROOT, log_file);
+}
 
 /**
  * The bot's Discord token, used for log in.

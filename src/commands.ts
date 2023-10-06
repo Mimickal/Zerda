@@ -130,11 +130,10 @@ async function handlerAppAdd(
 	}
 
 	logger.info(`Added ${detail(app)} to ${detail(interaction.guild)}`);
+	await goodReply(interaction, `Now tracking ${detail(app)}`);
+
 	logger.info(`Checking all members of ${detail(interaction.guild)} for added app`);
-	await Promise.all([
-		goodReply(interaction, `Now tracking ${detail(app)}`),
-		assignRoleAllMembers(interaction.guild),
-	]);
+	await assignRoleAllMembers(interaction.guild);
 }
 
 /// Stop tracking command handler
@@ -157,11 +156,10 @@ async function handlerAppRemove(
 
 	if (removed) {
 		logger.info(`Removed ${detail(app)} from ${detail(interaction.guild)}`);
+		await goodReply(interaction, `Stopped tracking ${detail(app)}`);
+
 		logger.info(`Checking all members of ${detail(interaction.guild)} for removed app`);
-		await Promise.all([
-			goodReply(interaction, `Stopped tracking ${detail(app)}`),
-			assignRoleAllMembers(interaction.guild),
-		]);
+		await assignRoleAllMembers(interaction.guild);
 	} else {
 		logger.info(`${detail(interaction.guild)} doesn't have ${detail(app)}`);
 		await mehReply(interaction, `I wasn't tracking ${detail(app)} in this server`);

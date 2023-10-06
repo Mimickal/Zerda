@@ -12,14 +12,26 @@ import knex from './knex_env';
 
 enum Table {
 	Apps = 'apps',
+	Meta = 'meta',
 }
 
-const GUILD_ID = 'guild_id' as const;
 const APP_ID = 'app_id' as const;
+const ASSIGNMENTS = 'assignments' as const;
+const GUILD_ID = 'guild_id' as const;
 
 interface App {
-	[GUILD_ID]: Snowflake;
 	[APP_ID]: Snowflake;
+	[GUILD_ID]: Snowflake;
+}
+
+interface Meta {
+	[ASSIGNMENTS]: number;
+}
+
+interface Stats {
+	apps: number;
+	assignments: number;
+	guilds: number;
 }
 
 /** Adds a new application to track for a server. */
@@ -57,6 +69,41 @@ export async function removeAppFromServer(
 	return await knex<App>(Table.Apps)
 		.where({ guild_id, app_id })
 		.delete();
+}
+
+/** Increments the role assignment counter. */
+export async function incrementAssignCounter(amount?: number): Promise<void> {
+	await knex<Meta>(Table.Meta)
+		.increment(ASSIGNMENTS, amount ?? 1);
+}
+
+/**
+ * Returns some meta stats about the bot.
+ *   - guilds:      number of guilds the bot is active in.
+ *   - apps:        number of applications the bot is tracking (per-guild).
+ *   - assignments: number of times the playing role has been assigned.
+ */
+export async function getMetaStats(): Promise<Stats> {
+	const guilds = ((await knex<App>(Table.Apps)
+		.countDistinct(GUILD_ID, { as: 'guilds' })
+		.first())
+		?.guilds ?? 0) as number;
+
+	const apps = ((await knex<App>(Table.Apps)
+		.count('*', { as: 'apps' })
+		.first())
+		?.apps ?? 0) as number;
+
+	const assignments = (await knex<Meta>(Table.Meta)
+		.select(ASSIGNMENTS)
+		.first())
+		?.[ASSIGNMENTS] ?? 0;
+
+	return {
+		apps,
+		assignments,
+		guilds
+	};
 }
 
 // Not a perfect implementation, but good enough for our purposes.

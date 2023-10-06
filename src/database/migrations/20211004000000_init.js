@@ -7,21 +7,30 @@
  * information.
  ******************************************************************************/
 const APPS = 'apps';
+const META = 'meta';
 
 // ID lengths have slowly increased from 17 to 20 over the past 6 years,
 // so let's just use a bigger number and never worry about it again.
 const ID_LEN = 30;
 
-exports.up = function(knex) {
-	return knex.schema.createTable(APPS, table => {
+exports.up = async function(knex) {
+	await knex.schema.createTable(APPS, table => {
 		table.string('guild_id', ID_LEN).notNullable();
 		table.string('app_id',   ID_LEN).notNullable();
 
 		table.primary(['guild_id', 'app_id']);
 	});
+
+	await knex.schema.createTable(META, table => {
+		table.integer('assignments').notNullable();
+	});
+
+	// There will only ever be one row in this table, so we make it here.
+	await knex(META).insert({ assignments: 0 });
 };
 
-exports.down = function(knex) {
-	return knex.schema.dropTableIfExists(APPS);
+exports.down = async function(knex) {
+	await knex.schema.dropTableIfExists(APPS);
+	await knex.schema.dropTableIfExists(META);
 };
 

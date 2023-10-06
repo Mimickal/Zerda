@@ -27,15 +27,17 @@ import { detail, GlobalLogger } from '@mimickal/discord-logging';
 
 import { Package } from './config';
 import * as database from './database';
+import {
+	UNKNOWN_ERR_MSG,
+	badReply,
+	goodReply,
+	mehReply,
+	unknownErrorReply,
+} from './replies';
 import { assignRoleAllMembers } from './role';
 
 const logger = GlobalLogger.logger;
-
 const APP_ID = 'application-id';
-const EMOJI_BAD = ':no_entry:';
-const EMOJI_MEH = ':ok:';
-const EMOJI_GOOD = ':white_check_mark:';
-const UNKNOWN_ERR_MSG = "Something went wrong. I logged the issue so someone can fix it.";
 
 const COMMANDS = new SlashCommandRegistry()
 	.setDefaultHandler(handlerDefault)
@@ -82,19 +84,15 @@ export default COMMANDS;
 /** Handler for unknown commands (default handler). */
 async function handlerDefault(interaction: CommandInteraction): Promise<void> {
 	logger.warn(`Unimplemented ${detail(interaction)}`);
-	await interaction.reply({
-		content: "Sorry, I don't know how to do this yet. It's probably coming soon!",
-		ephemeral: true,
-	});
+	await mehReply(interaction,
+		"Sorry, I don't know how to do this yet. It's probably coming soon!"
+	);
 }
 
 /** Handler when a non-admin attempts to run a privileged command. */
 async function handlerNotAdmin(interaction: CommandInteraction): Promise<void> {
 	logger.info(`${detail(interaction.member)} is not an admin`);
-	await interaction.reply({
-		content: `${EMOJI_BAD} Sorry, only admins can use this command.`,
-		ephemeral: true,
-	});
+	await badReply(interaction, 'Sorry, only admins can use this command!');
 }
 
 /** Info command handler. Prints bot version, source code, and some fun stats. */
@@ -123,16 +121,10 @@ async function handlerAppAdd(
 	} catch (err: unknown) {
 		if (errCodeEquals(err, 'SQLITE_CONSTRAINT')) {
 			logger.info(`${detail(interaction.guild)} already has ${detail(app)}`);
-			await interaction.reply({
-				content: `${EMOJI_MEH} Already tracking ${detail(app)} in this server`,
-				ephemeral: true,
-			});
+			await mehReply(interaction, `Already tracking ${detail(app)} in this server`);
 		} else {
 			logger.error(`${detail(interaction)} addAppToServer() failed`, err);
-			await interaction.reply({
-				content: `${EMOJI_BAD} ${UNKNOWN_ERR_MSG}`,
-				ephemeral: true,
-			});
+			await unknownErrorReply(interaction);
 		}
 		return;
 	}
@@ -140,7 +132,7 @@ async function handlerAppAdd(
 	logger.info(`Added ${detail(app)} to ${detail(interaction.guild)}`);
 	logger.info(`Checking all members of ${detail(interaction.guild)} for added app`);
 	await Promise.all([
-		interaction.reply(`${EMOJI_GOOD} Now tracking ${detail(app)}`),
+		goodReply(interaction, `Now tracking ${detail(app)}`),
 		assignRoleAllMembers(interaction.guild),
 	]);
 }
@@ -159,10 +151,7 @@ async function handlerAppRemove(
 		removed = await database.removeAppFromServer(interaction.guild.id, app.id);
 	} catch (err) {
 		logger.error(`${detail(interaction)} removeAppFromServer() failed`, err);
-		await interaction.reply({
-			content: `${EMOJI_BAD} ${UNKNOWN_ERR_MSG}`,
-			ephemeral: true,
-		});
+		await unknownErrorReply(interaction);
 		return;
 	}
 
@@ -170,15 +159,12 @@ async function handlerAppRemove(
 		logger.info(`Removed ${detail(app)} from ${detail(interaction.guild)}`);
 		logger.info(`Checking all members of ${detail(interaction.guild)} for removed app`);
 		await Promise.all([
-			interaction.reply(`${EMOJI_GOOD} Stopped tracking ${detail(app)}`),
+			goodReply(interaction, `Stopped tracking ${detail(app)}`),
 			assignRoleAllMembers(interaction.guild),
 		]);
 	} else {
 		logger.info(`${detail(interaction.guild)} doesn't have ${detail(app)}`);
-		await interaction.reply({
-			content: `${EMOJI_MEH} I wasn't tracking ${detail(app)} in this server`,
-			ephemeral: true,
-		});
+		await mehReply(interaction, `I wasn't tracking ${detail(app)} in this server`);
 	}
 }
 
@@ -191,10 +177,7 @@ async function handlerAppList(
 		app_ids = await database.getAppsInServer(interaction.guild.id);
 	} catch (err) {
 		logger.error(`${detail(interaction)} getAppsInServer() failed`, err);
-		await interaction.reply({
-			content: `${EMOJI_BAD} ${UNKNOWN_ERR_MSG}`,
-			ephemeral: true,
-		});
+		await unknownErrorReply(interaction);
 		return;
 	}
 
@@ -256,10 +239,7 @@ async function smartGetApplication(
 			logger.error(`${baseMSg} with unhandled error`, err);
 		}
 
-		await interaction.reply({
-			content: `${EMOJI_BAD} ${reason ?? UNKNOWN_ERR_MSG}`,
-			ephemeral: true,
-		});
+		await badReply(interaction, `${reason ?? UNKNOWN_ERR_MSG}`);
 	}
 }
 

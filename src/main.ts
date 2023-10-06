@@ -26,7 +26,6 @@ const client = new Discord.Client({
 		}],
 	},
 	intents: [
-		Discord.GatewayIntentBits.DirectMessages, // Unused, but useful for logging
 		Discord.GatewayIntentBits.Guilds,
 		Discord.GatewayIntentBits.GuildMembers,
 		Discord.GatewayIntentBits.GuildPresences,
@@ -38,11 +37,7 @@ client.on(Discord.Events.PresenceUpdate, events.onPresenceUpdate);
 client.on(Discord.Events.GuildCreate, events.onGuildJoin);
 client.on(Discord.Events.GuildDelete, events.onGuildLeave);
 client.on(Discord.Events.InteractionCreate, events.onInteraction);
-client.on(Discord.Events.MessageCreate, events.onMessage);
 
-
-// TODO Log if we ever message someone.
-// TODO check fo API failures (like we can't contact Discord)
 logger.info(startupMsg(Package.version, Config));
 
 client.login(Config.token).catch(err => {

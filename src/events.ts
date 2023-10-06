@@ -11,7 +11,6 @@ import {
 	Client,
 	Events,
 	Guild,
-	Message,
 	Presence,
 } from 'discord.js';
 import { detail, GlobalLogger, loginMsg } from '@mimickal/discord-logging';
@@ -96,18 +95,5 @@ export async function onInteraction(interaction: BaseInteraction): Promise<void>
 		await commands.execute(interaction);
 	} catch (err) {
 		logger.error(`${detail(interaction)} error fell through`, err);
-	}
-}
-
-/**
- * {@link Discord.Events.MessageCreate} event handler.
- *
- * We don't actually do anything with messages, but it's useful to log DMs anyway.
- */
-export async function onMessage(msg: Message): Promise<void> {
-	// TODO we might consider not doing this, for GDPR reasons.
-	if (msg.channel.isDMBased()) {
-		logger.info(`Received DM from ${detail(msg.author)}: ${msg.content}`);
-		return;
 	}
 }

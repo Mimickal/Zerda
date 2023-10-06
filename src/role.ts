@@ -155,6 +155,7 @@ async function addRole(member: GuildMember): Promise<void> {
 
 	try {
 		await member.roles.add(role);
+		await database.incrementAssignCounter();
 		logger.info(`Assigned ${detail(role)} to ${detail(member)}`);
 	}
 	catch (err) {

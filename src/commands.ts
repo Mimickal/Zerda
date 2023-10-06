@@ -15,6 +15,8 @@ import {
 	DiscordAPIError,
 	RESTJSONErrorCodes,
 	Snowflake,
+	bold,
+	codeBlock,
 } from 'discord.js';
 import {
 	getApplication,
@@ -23,7 +25,7 @@ import {
 	SlashCommandRegistry,
 	WithGuild,
 } from 'discord-command-registry';
-import { detail, GlobalLogger } from '@mimickal/discord-logging';
+import { asLines, detail, GlobalLogger } from '@mimickal/discord-logging';
 
 import { Package } from './config';
 import * as database from './database';
@@ -97,11 +99,19 @@ async function handlerNotAdmin(interaction: CommandInteraction): Promise<void> {
 
 /** Info command handler. Prints bot version, source code, and some fun stats. */
 async function handlerInfo(interaction: CommandInteraction): Promise<void> {
-	await interaction.reply(
-		`I am a ${Package.description}.\n` +
-		`**Running version:** ${Package.version}\n` +
-		`**Source code:** ${Package.homepage}\n`
-	);
+	const stats = await database.getMetaStats();
+	await interaction.reply(asLines(
+		Package.description,
+		`${bold('Running version:')} ${Package.version}`,
+		`${bold('Source code:')} ${Package.homepage}`,
+		'',
+		codeBlock(asLines([
+			'Stats for nerds:',
+			`  - Servers bot is active in: ${stats.guilds}`,
+			`  - Applications tracked:     ${stats.apps}`,
+			`  - Total role assignments:   ${stats.assignments}`,
+		])),
+	));
 }
 
 /**

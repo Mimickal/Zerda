@@ -2,7 +2,7 @@
   "name": "zerda",
   "version": "0.1.0-dev",
   "private": true,
-  "description": "Discord bot that assigns roles to people who are playing a game, so they sort higher in the users list",
+  "description": "I am a Discord bot that assigns roles to people who are playing a game, so they sort higher in the users list.",
   "main": "src/main.ts",
   "engines": {
     "node": ">=16.11.0"

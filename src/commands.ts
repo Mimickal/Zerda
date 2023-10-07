@@ -12,7 +12,6 @@ import {
 	ChatInputCommandInteraction,
 	CommandInteraction,
 	CommandInteractionOption,
-	DiscordAPIError,
 	PermissionFlagsBits,
 	RESTJSONErrorCodes,
 	Snowflake,
@@ -95,7 +94,7 @@ async function handlerDefault(interaction: CommandInteraction): Promise<void> {
 
 /** Handler when a non-admin attempts to run a privileged command. */
 async function handlerNotAdmin(interaction: CommandInteraction): Promise<void> {
-	logger.info(`${detail(interaction.member)} is not an admin`);
+	logger.info(`${detail(interaction.member)} is not an admin so cannot use commands`);
 	await badReply(interaction, 'Sorry, only admins can use this command!');
 }
 
@@ -148,7 +147,10 @@ async function handlerAppAdd(
 	await assignRoleAllMembers(interaction.guild);
 }
 
-/// Stop tracking command handler
+/**
+ * App remove command handler. Removes the given app from the app list for the
+ * guild this command came from.
+ */
 async function handlerAppRemove(
 	interaction: WithGuild<ChatInputCommandInteraction>,
 ): Promise<void> {
@@ -178,7 +180,10 @@ async function handlerAppRemove(
 	}
 }
 
-/// List apps command handler
+/**
+ * List apps command handler. Prints all apps tracked in the guild this command
+ * came from.
+ */
 async function handlerAppList(
 	interaction: WithGuild<ChatInputCommandInteraction>,
 ): Promise<void> {
@@ -229,17 +234,11 @@ async function smartGetApplication(
 	} catch (err: unknown) {
 		let reason: string | undefined;
 
-		// FIXME actually handle these errors.
-		// Maybe pull this to discord-command-registry.
 		if (errCodeEquals(err, RESTJSONErrorCodes.InvalidFormBodyOrContentType)) {
-			console.log('invalidform', err);
-			reason = (err as DiscordAPIError).name;
-				//.rawError.errors.application_id._errors[0].message;
+			reason = 'Invalid ID given.';
 		}
-
 		if (errCodeEquals(err, RESTJSONErrorCodes.UnknownApplication)) {
-			console.log('unknown app', err);
-			//reason = err.rawError.message;
+			reason = 'I could not find an application with that ID.';
 		}
 
 		const baseMSg = `${detail(interaction)} getApplication() failed`;

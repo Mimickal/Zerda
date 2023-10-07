@@ -12,7 +12,7 @@ import { CommandInteraction } from 'discord.js';
 const logger = GlobalLogger.logger;
 
 enum SignalEmoji {
-	Bad  = ':no_entry',
+	Bad  = ':no_entry:',
 	Meh  = ':ok:',
 	Good = ':white_check_mark:',
 }

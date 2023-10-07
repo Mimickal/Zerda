@@ -16,6 +16,7 @@ import {
 import { detail, GlobalLogger, loginMsg } from '@mimickal/discord-logging';
 
 import commands from './commands';
+import * as database from './database';
 import {
 	assignRoleAllGuilds,
 	assignRole,
@@ -79,7 +80,7 @@ export async function onGuildJoin(guild: Guild): Promise<void> {
  */
 export async function onGuildLeave(guild: Guild): Promise<void> {
 	logger.info(`Left ${detail(guild)}`);
-	// TODO probably clear config for guild.
+	await database.clearServerConfig(guild.id);
 }
 
 /**

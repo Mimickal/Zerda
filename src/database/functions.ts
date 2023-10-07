@@ -71,6 +71,17 @@ export async function removeAppFromServer(
 		.delete();
 }
 
+/** Deletes all configuration for a server. */
+export async function clearServerConfig(
+	guild_id: Snowflake,
+): Promise<number> {
+	validateDiscordId(guild_id, GUILD_ID);
+
+	return await knex<App>(Table.Apps)
+		.where(GUILD_ID, guild_id)
+		.delete();
+}
+
 /** Increments the role assignment counter. */
 export async function incrementAssignCounter(amount?: number): Promise<void> {
 	await knex<Meta>(Table.Meta)

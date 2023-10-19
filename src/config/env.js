@@ -17,14 +17,15 @@ const path = require('path');
 
 function usage() {
 	console.log('Usage:\n\n' +
-		'\tapp     The bot application ID.\n' +
-		'\tconfig  Use this JSON config file instead of the default.\n' +
-		'\tdbfile  The SQLite3 database file to use.\n' +
-		'\tguild   A Discord guild ID. Causes commands to be registered for\n' +
-		'\t        just this guild. If unset, commands are registered globally.\n' +
-		'\tlogfile The log file to use.\n' +
-		'\ttoken   A file containing a bot token.\n' +
-		'\thelp    Show this help text and exit.\n'
+		'\t--app     The bot application ID.\n' +
+		'\t--config  Use this JSON config file instead of the default.\n' +
+		'\t--dbfile  The SQLite3 database file to use.\n' +
+		'\t--guild   A Discord guild ID. Causes commands to be registered for\n' +
+		'\t          just this guild. If unset, commands are registered globally.\n' +
+		'\t--logfile The log file to use.\n' +
+		'\t--token   A file containing a bot token.\n' +
+		'\t--help    Show this help text and exit.\n' +
+		'\t--version Show bot version and exit.\n'
 	);
 	process.exit(0);
 }
@@ -45,6 +46,11 @@ cli_args = {
 
 if (cli_args.help) {
 	usage();
+}
+if (cli_args.version) {
+	const package = require('../../package.json');
+	console.log(package.version);
+	process.exit(0);
 }
 
 // Load config relative to project root, since knex overrides cwd

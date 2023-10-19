@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+# This is if you want to deploy updates to the bot using git.
+# 1. Create a bare git repository.
+# 2. Add this file to the "hooks" folder of that bare repository.
+# 3. Add the repository as a remote to wherever you have the bot cloned.
+# NOTE: You need to update this manually!
+
+# Change these to fit your environment
+CONFIG="/etc/discord/Zerda/config.json"
+TARGET="/srv/discord/Zerda"
+TEMP="/tmp/discord/Zerda.git"
+REPO="/srv/discord/Zerda.git"
+NODE_ENV="prod"
+
+# Download all the dependencies and stuff
+mkdir -p $TEMP
+/usr/bin/env git --work-tree=$TEMP --git-dir=$REPO checkout -f
+cd $TEMP
+/usr/bin/env npm ci
+NODE_ENV=$NODE_ENV /usr/bin/env npm run knex migrate:latest -- -- --config $CONFIG
+
+# Now install the code
+cd /
+rm -rf $TARGET
+mv $TEMP $TARGET
+
+# Restart the app
+/usr/bin/env systemctl restart zerda.service

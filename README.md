@@ -10,7 +10,7 @@ Zerda assigns the playing role for. This will allow people to more easily find
 matches and join each others' matches from Discord.
 
 
-### [Invite Zerda to your server]() (link coming soon)
+### [Invite Zerda to your server](https://discord.com/api/oauth2/authorize?client_id=884160015542419457&permissions=268437504&scope=bot%20applications.commands)
 
 ### Need help? [Join the support server here](https://discord.gg/7UBT8SK)
 
@@ -39,7 +39,7 @@ all traces of the bot in your server.
 
 ### Required:
 
-1. [Invite the bot to your server]() (link coming soon)
+1. [Invite the bot to your server](https://discord.com/api/oauth2/authorize?client_id=884160015542419457&permissions=268437504&scope=bot%20applications.commands)
 1. Give the bot the `Manage Roles` permission.
 1. Add some games to track (See [Commands](#commands))
 

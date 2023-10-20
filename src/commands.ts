@@ -40,6 +40,7 @@ import { assignRoleAllMembers } from './role';
 
 const logger = GlobalLogger.logger;
 const APP_ID = 'application-id' as const;
+const USER = 'user' as const;
 
 const COMMANDS = new SlashCommandRegistry()
 	.setDefaultHandler(handlerDefault)
@@ -80,6 +81,16 @@ const COMMANDS = new SlashCommandRegistry()
 			.setName('list')
 			.setDescription('List all applications tracked on this server')
 			.setHandler(requireGuild(handlerAppList))
+		)
+		.addSubcommand(subcommand => subcommand
+			.setName('get')
+			.setDescription("Get the name and ID of a user's current activities")
+			.setHandler(requireGuild(handlerAppGet))
+			.addUserOption(option => option
+				.setName(USER)
+				.setDescription("Get this user's activity. If omitted, returns your own.")
+				.setRequired(false)
+			)
 		)
 	);
 export default COMMANDS;
@@ -227,6 +238,33 @@ async function handlerAppList(
 			.join('\n');
 
 		await mehReply(interaction, message, { edit: true });
+	}
+}
+
+/**
+ * Fetches the activities the given user is currently doing.
+ * If the user option is omitted, uses the user who initiated the command.
+ */
+async function handlerAppGet(
+	interaction: WithGuild<ChatInputCommandInteraction>,
+): Promise<void> {
+	const user = interaction.options.getUser(USER, false) ?? interaction.user;
+	const member = await interaction.guild.members.fetch({
+		user: user,
+		withPresences: true,
+	});
+
+	if (member.presence && member.presence.activities.length > 0) {
+		const userName = user === interaction.user ? 'Your' : `${user}'s`;
+
+		await goodReply(interaction, `${userName} activities:\n` +
+			member.presence.activities.map(act => (
+				`- ${act.name} (${act.applicationId ?? '<no ID>'})\n`
+			))
+		);
+	} else {
+		const report = user === interaction.user ? 'You are' : `${user} is`;
+		await mehReply(interaction, `${report} not doing any activities.`);
 	}
 }
 

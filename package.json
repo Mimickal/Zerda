@@ -13,7 +13,7 @@
     "docker:daemon:stop": "docker-compose down",
     "docker:start": "docker-compose up --build",
     "knex": "npx knex --knexfile src/database/knexfile.js",
-    "register": "npx ts-node node_modules/discord-command-registry/src/register.ts",
+    "register": "npx ts-node node_modules/discord-command-registry/src/register.ts src/commands.ts",
     "start": "NODE_ENV=prod npx ts-node src/main.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

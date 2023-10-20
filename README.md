@@ -60,10 +60,12 @@ will not be allowed to assign the role.
 
 ## Commands
 
-This bot uses slash commands exclusively. You will also need to know your game's
-(aka Application's) ID. See [Where can I find my Application ID](
-https://support-dev.discord.com/hc/en-us/articles/360028717192-Where-can-I-find-my-Application-Team-Server-ID-)
+This bot uses slash commands exclusively.
 
+- **Get a user's activities (including applications)**
+  - `/app get [user: <User ID here>]`
+  - To get the ID for the game you want to track, use this command on a user
+    playing that game (or yourself).
 - **Start tracking an application** (Requires Admin)
   - `/app add application-id: <Discord app ID here>`
 - **Stop tracking an application** (Requires Admin)

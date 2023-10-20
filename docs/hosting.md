@@ -17,6 +17,8 @@ in a container.
 
 1. Create a [Discord application](https://discord.com/developers/applications),
    and add a bot to it. Save the token it gives you.
+1. Under the bot settings, enable the "Presence Intent" and
+   "Server Members Intent".
 1. Create a `config.json` file in the project root with the following:
    ```json
    {
@@ -31,7 +33,7 @@ in a container.
 1. Register commands with Discord's API. This step requires Node.js on your
    system, but only needs to be done once, and can be done from any computer.
    ```sh
-   npm run register
+   npm run register -- --config path/to/your/config.json
    ```
 
 # Additional configuration

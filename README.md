@@ -39,15 +39,16 @@ all traces of the bot in your server.
 
 ### Required:
 
-1. [Invite the bot to your server](https://discord.com/api/oauth2/authorize?client_id=884160015542419457&permissions=268437504&scope=bot%20applications.commands)
-1. Give the bot the `Manage Roles` permission.
+1. [Invite the bot to your server](https://discord.com/api/oauth2/authorize?client_id=884160015542419457&permissions=268437504&scope=bot%20applications.commands).
+1. Make sure the bot has `Manage Roles` and `Send Messages` permissions.
+1. Make sure the bot's role is sorted above the "Currently Playing" role.
 1. Add some games to track (See [Commands](#commands))
 
 ### Optional:
 
-- Change the color of the "Currently Playing" role
-- Reorder the "Currently Playing" role (makes it sort above or below other
-  roles).
+- Change the color of the "Currently Playing" role.
+- Reorder the "Currently Playing" role to determine where members are shown in
+  the list. Remember to keep Zerda's bot role ordered above "Currently Playing"!
 - You could also disable `Display role members separately from online members`,
   but that sort of undermines the point of this bot.
 

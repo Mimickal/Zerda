@@ -52,6 +52,7 @@ const COMMANDS = new SlashCommandRegistry()
 	.addCommand(command => command
 		.setName('app')
 		.setDescription('Modify applications the bot tracks in this server')
+		.setDMPermission(false)
 		.setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
 		.addSubcommand(subcommand => subcommand
 			.setName('add')

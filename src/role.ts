@@ -6,9 +6,7 @@
  * See LICENSE or <https://www.gnu.org/licenses/agpl-3.0.en.html> for more
  * information.
  ******************************************************************************/
-import {
-	Client, Guild, GuildMember, PresenceStatus, Role,
-} from 'discord.js';
+import { Client, Guild, GuildMember, PresenceStatus, Role } from 'discord.js';
 import { detail, GlobalLogger } from '@mimickal/discord-logging';
 
 import { ROLE_NAME } from './config';
@@ -16,13 +14,18 @@ import * as database from './database';
 
 const logger = GlobalLogger.logger;
 
+// TODO there are surely some redundant operations in here.
+// We're fetching the role for every user we check in the guild.
+// We could absolutely just pull that role early on, then pass it down the call
+// chains. Same with the database calls (though these should be fast anyway).
+
 /**
  * Applies {@link createPlayingRole} to every Guild this bot can see.
  */
 export async function createPlayingRoleAllGuilds(client: Client): Promise<void> {
 	logger.info(`Checking all guilds for "${ROLE_NAME}" role...`);
 	// TODO do we need to await this? We can probably do all of these at once.
-	for await (const guild of client.guilds.cache.values()) {
+	for (const guild of client.guilds.cache.values()) {
 		await createPlayingRole(guild);
 	}
 }
@@ -65,7 +68,7 @@ export async function assignRoleAllGuilds(client: Client): Promise<void> {
 	let guildCount = 0;
 	let memberCount = 0;
 
-	for await (const guild of client.guilds.cache.values()) {
+	for (const guild of client.guilds.cache.values()) {
 		const count = await assignRoleAllMembers(guild);
 		guildCount++;
 		memberCount += count;
@@ -83,11 +86,10 @@ export async function assignRoleAllGuilds(client: Client): Promise<void> {
  * @return the number of GuildMembers we checked.
  */
 export async function assignRoleAllMembers(guild: Guild): Promise<number> {
-	// TODO how will we handle more than 1000 users? Do we need a special
-	// API permission for this?
-	const members = await guild.members.fetch();
+	// Apparently Discord.js really will just fetch thousands of members at once.
+	const members = await guild.members.fetch({ withPresences: true });
 
-	// TODO check if guild is available before doing this. (in guild?)
+	// TODO This could be a ton of users. We shouldn't fire these all at once.
 	await Promise.all(members.map(member => {
 		logger.debug(`Checking ${detail(member)} in ${detail(guild)}`);
 

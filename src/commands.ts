@@ -39,7 +39,7 @@ import {
 import { assignRoleAllMembers } from './role';
 
 const logger = GlobalLogger.logger;
-const APP_ID = 'application-id';
+const APP_ID = 'application-id' as const;
 
 const COMMANDS = new SlashCommandRegistry()
 	.setDefaultHandler(handlerDefault)
@@ -187,12 +187,17 @@ async function handlerAppRemove(
 async function handlerAppList(
 	interaction: WithGuild<ChatInputCommandInteraction>,
 ): Promise<void> {
+	await mehReply(interaction,
+		'Fetching app list. This can take a few moments...',
+		{ ephemeral: false },
+	);
+
 	let app_ids: Snowflake[];
 	try {
 		app_ids = await database.getAppsInServer(interaction.guild.id);
 	} catch (err) {
 		logger.error(`${detail(interaction)} getAppsInServer() failed`, err);
-		await unknownErrorReply(interaction);
+		await unknownErrorReply(interaction, { edit: true });
 		return;
 	}
 
@@ -210,15 +215,18 @@ async function handlerAppList(
 	}));
 
 	if (apps.length === 0) {
-		await interaction.reply('I am not tracking any apps in this server yet!');
-	} else {
-		// TODO this can hit the max message length limit
-		await interaction.reply(
-			'I am tracking these apps in this server:\n' +
-			apps
-				.filter((app): app is Application => !!app)
-				.map(app => `- ${app.name} (${app.id})\n`)
+		await mehReply(interaction,
+			'I am not tracking any apps in this server yet!',
+			{ edit: true },
 		);
+	} else {
+		// TODO this can overrun message length limit. Need to split this up.
+		const message = 'I am tracking these apps in this server:\n' + apps
+			.filter((app): app is Application => !!app)
+			.map(app => `- ${app.name} (${app.id})`)
+			.join('\n');
+
+		await mehReply(interaction, message, { edit: true });
 	}
 }
 

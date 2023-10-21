@@ -6,7 +6,14 @@
  * See LICENSE or <https://www.gnu.org/licenses/agpl-3.0.en.html> for more
  * information.
  ******************************************************************************/
-import { Client, Guild, GuildMember, PresenceStatus, Role } from 'discord.js';
+import {
+	Client,
+	Guild,
+	GuildMember,
+	PermissionsBitField,
+	PresenceStatus,
+	Role,
+} from 'discord.js';
 import { detail, GlobalLogger } from '@mimickal/discord-logging';
 
 import { ROLE_NAME } from './config';
@@ -45,7 +52,7 @@ export async function createPlayingRole(guild: Guild): Promise<void> {
 		role = await guild.roles.create({
 			hoist: true, // VERY IMPORTANT! This bot doesn't work without this!
 			name: ROLE_NAME,
-			permissions: undefined,
+			permissions: new PermissionsBitField(),
 			position: 0,
 			reason: 'Role for people currently playing',
 		});

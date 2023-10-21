@@ -260,8 +260,8 @@ async function handlerAppGet(
 
 		await goodReply(interaction, `${userName} activities:\n` +
 			member.presence.activities.map(act => (
-				`- ${act.name} (${act.applicationId ?? '<no ID>'})\n`
-			))
+				`- ${act.name} (${act.applicationId ?? '<No ID>'})\n`
+			)).join('')
 		);
 	} else {
 		const report = user === interaction.user ? 'You are' : `${user} is`;

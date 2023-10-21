@@ -71,18 +71,23 @@ export async function createPlayingRole(guild: Guild): Promise<void> {
  * rate limit can make this operation take some time to complete.
  */
 export async function assignRoleAllGuilds(client: Client): Promise<void> {
-	logger.info("Beginning initial member check...");
+	logger.info('Beginning initial member check...');
+	const startTime = Date.now();
 	let guildCount = 0;
 	let memberCount = 0;
 
 	for (const guild of client.guilds.cache.values()) {
-		const count = await assignRoleAllMembers(guild);
 		guildCount++;
+		const progress = `(${guildCount}/${client.guilds.cache.size})`;
+		const count = await assignRoleAllMembers(guild, progress);
 		memberCount += count;
 	}
 
-	logger.info("Finished initial member check. " +
-		`Checked ${memberCount} members across ${guildCount} guilds`);
+	const timeTaken = Date.now() - startTime;
+	logger.info('Finished initial member check. ' +
+		`Checked ${memberCount} members across ${guildCount} guilds ` +
+		`in ${timeTaken} ms`
+	);
 }
 
 /**
@@ -92,16 +97,33 @@ export async function assignRoleAllGuilds(client: Client): Promise<void> {
  *
  * @return the number of GuildMembers we checked.
  */
-export async function assignRoleAllMembers(guild: Guild): Promise<number> {
+export async function assignRoleAllMembers(guild: Guild, progress = ''): Promise<number> {
+	logger.info(`Beginning member check in ${detail(guild)} ${progress}`);
+	const startTime = Date.now();
+
 	// Apparently Discord.js really will just fetch thousands of members at once.
 	const members = await guild.members.fetch({ withPresences: true });
+	let processed = 0;
 
-	// TODO This could be a ton of users. We shouldn't fire these all at once.
-	await Promise.all(members.map(member => {
+	for (const member of members.values()) {
+		processed++;
+
 		logger.debug(`Checking ${detail(member)} in ${detail(guild)}`);
+		await assignRole(member);
 
-		return assignRole(member);
-	}));
+		// Don't log on last iteration. It's redundant with the "finish" log.
+		if (processed % 50 === 0 && processed < members.size) {
+			logger.debug(
+				`Checked ${processed}/${members.size} members in ${detail(guild)}`
+			);
+		}
+	}
+
+	const timeSpent = Date.now() - startTime;
+	logger.info(
+		`Finished member check in ${detail(guild)}. ` +
+		`Checked ${members.size} members in ${timeSpent} ms ${progress}`
+	);
 
 	return members.size;
 }
@@ -158,7 +180,7 @@ async function addRole(member: GuildMember): Promise<void> {
 	}
 
 	if (member.roles.cache.has(role.id)) {
-		logger.info(`${detail(member)} already has ${detail(role)}`);
+		logger.debug(`${detail(member)} already has ${detail(role)}`);
 		return;
 	}
 
@@ -166,8 +188,7 @@ async function addRole(member: GuildMember): Promise<void> {
 		await member.roles.add(role);
 		await database.incrementAssignCounter();
 		logger.info(`Assigned ${detail(role)} to ${detail(member)}`);
-	}
-	catch (err) {
+	} catch (err) {
 		logger.warn(`Error assigning ${detail(role)} to ${detail(member)}`, err);
 	}
 }
@@ -190,8 +211,7 @@ async function removeRole(member: GuildMember): Promise<void> {
 	try {
 		await member.roles.remove(role);
 		logger.info(`Removed ${detail(role)} from ${detail(member)}`);
-	}
-	catch (err) {
+	} catch (err) {
 		logger.warn(`Error removing ${detail(role)} from ${detail(member)}`, err);
 	}
 }

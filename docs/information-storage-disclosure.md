@@ -17,6 +17,8 @@ Zerda logs the following data:
 
 - The ID of servers it joins.
 - The ID of applications tracked, per server.
+- The number of members in each server.
+- The ID of every member in the server.
 - The ID of server members who:
   - Start a tracked activity.
   - Stop a tracked activity.

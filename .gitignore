@@ -10,3 +10,6 @@ todo
 # Output files
 *.log
 *.sqlite3
+
+# Exceptions
+!tsconfig.json

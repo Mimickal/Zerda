@@ -6,4 +6,4 @@
  * See LICENSE or <https://www.gnu.org/licenses/agpl-3.0.en.html> for more
  * information.
  ******************************************************************************/
-module.exports = require('./functions');
+export * from './functions';

@@ -1,35 +1,39 @@
 {
   "name": "zerda",
-  "version": "0.1.0",
-  "description": "Discord bot that assigns roles to people who are playing a game, so they sort higher in the users list",
-  "main": "src/main.js",
+  "version": "1.0.0",
+  "private": true,
+  "description": "I am a Discord bot that assigns a role to people who are playing a game, so they sort higher in the member list.",
+  "main": "src/main.ts",
+  "engines": {
+    "node": ">=16.11.0"
+  },
   "scripts": {
-    "dev": "ZERDA_DATABASE=dev.sqlite3 node src/main.js",
+    "dev": "npx ts-node src/main.ts",
     "docker:daemon:start": "npm run docker:start -- --detach",
     "docker:daemon:stop": "docker-compose down",
     "docker:start": "docker-compose up --build",
     "knex": "npx knex --knexfile src/database/knexfile.js",
-    "register": "node bin/register.js",
-    "start": "NODE_ENV=prod node src/main.js",
+    "register": "npx ts-node node_modules/discord-command-registry/src/register.ts src/commands.ts",
+    "start": "NODE_ENV=prod npx ts-node src/main.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "Mimickal",
+  "author": "Mimickal <mimickal.dev@gmail.com>",
   "license": "AGPL-3.0",
-  "private": true,
-  "homepage": "https://github.com/Sigmmma/Zerda",
+  "homepage": "https://github.com/Mimickal/Zerda",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Sigmmma/Zerda.git"
+    "url": "https://github.com/Mimickal/Zerda.git"
   },
   "bugs": {
-    "url": "https://github.com/Sigmmma/Zerda/issues"
+    "url": "https://github.com/Mimickal/Zerda/issues"
   },
   "dependencies": {
-    "discord-command-registry": "^1.1.0",
-    "discord.js": "^13.1.0",
-    "knex": "^0.95.11",
-    "minimist": "^1.2.5",
-    "sqlite3": "^5.0.2",
-    "winston": "^3.3.3"
+    "@mimickal/discord-logging": "github:Mimickal/discord-logging#v1.4.0",
+    "discord-command-registry": "^3.1.1",
+    "discord.js": "^14.13.0",
+    "knex": "^2.5.1",
+    "minimist": "^1.2.8",
+    "sqlite3": "^5.1.6",
+    "ts-node": "^10.9.1"
   }
 }

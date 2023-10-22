@@ -3,9 +3,13 @@ node_modules/
 
 # Dev files
 *.swp
-dev-token
-config.json
+*config.json
+invite
+todo
 
 # Output files
-output.log
-dev.sqlite3
+*.log
+*.sqlite3
+
+# Exceptions
+!tsconfig.json

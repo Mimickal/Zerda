@@ -15,22 +15,22 @@ const fs = require('fs');
 const minimist = require('minimist');
 const path = require('path');
 
-const logger = require('./logger');
-
 function usage() {
 	console.log('Usage:\n\n' +
-		'\tapp     The bot application ID.\n' +
-		'\tconfig  Use this JSON config file instead of the default.\n' +
-		'\tdbfile  The SQLite3 database file to use.\n' +
-		'\tguild   A Discord guild ID. Causes commands to be registered for\n' +
-		'\t        just this guild. If unset, commands are registered globally.\n' +
-		'\ttoken   A file containing a bot token.\n' +
-		'\thelp    Show this help text and exit.\n'
+		'\t--app     The bot application ID.\n' +
+		'\t--config  Use this JSON config file instead of the default.\n' +
+		'\t--dbfile  The SQLite3 database file to use.\n' +
+		'\t--guild   A Discord guild ID. Causes commands to be registered for\n' +
+		'\t          just this guild. If unset, commands are registered globally.\n' +
+		'\t--logfile The log file to use.\n' +
+		'\t--token   A file containing a bot token.\n' +
+		'\t--help    Show this help text and exit.\n' +
+		'\t--version Show bot version and exit.\n'
 	);
 	process.exit(0);
 }
 
-const PROJECT_ROOT = fs.realpathSync(path.join(__dirname, '..'));
+const PROJECT_ROOT = fs.realpathSync(path.join(__dirname, '..', '..'));
 
 // This two-part parse silliness lets us provide args during knex commands using
 // double-double dashes (e.g. -- -- --some-option)
@@ -47,6 +47,11 @@ cli_args = {
 if (cli_args.help) {
 	usage();
 }
+if (cli_args.version) {
+	const package = require('../../package.json');
+	console.log(package.version);
+	process.exit(0);
+}
 
 // Load config relative to project root, since knex overrides cwd
 let conf_file =
@@ -62,9 +67,9 @@ const conf = require(conf_file);
  * The application ID of the bot. This is typically the Discord bot user's ID.
  */
 const application_id =
-	cli_args.app        ??
-	conf.application_id ??
-	process.env.ZERDA_APP_ID;
+	cli_args.app ??
+	conf.app     ??
+	process.env.ZERDA_APP;
 
 /**
  * The SQLite3 database file for the bot. If this is not set, a local dev
@@ -87,9 +92,22 @@ if (database_file && !path.isAbsolute(database_file)) {
  * registering commands for a single guild, during testing.
  */
 const guild_id =
-	cli_args.guild     ??
-	conf.test_guild_id ??
+	cli_args.guild ??
+	conf.guild     ??
 	process.env.ZERDA_GUILD_ID;
+
+/**
+ * The log output file for the bot. If this is not set, a local dev log is
+ * used instead.
+ */
+let log_file =
+	cli_args.logfile          ??
+	conf.log_file             ??
+	process.env.ZERDA_LOGFILE ??
+	'dev.log';
+if (!path.isAbsolute(log_file)) {
+	log_file = path.resolve(PROJECT_ROOT, log_file);
+}
 
 /**
  * The bot's Discord token, used for log in.
@@ -110,9 +128,6 @@ module.exports = Object.freeze({
 	application_id: application_id,
 	database_file: database_file,
 	guild_id: guild_id,
+	log_file: log_file,
 	token: token,
 });
-
-const safe_config = Object.assign({}, module.exports);
-if (safe_config.token) safe_config.token = '<REDACTED>';
-logger.debug(`Using config ${JSON.stringify(safe_config)}`);

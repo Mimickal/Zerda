@@ -6,16 +6,8 @@
  * See LICENSE or <https://www.gnu.org/licenses/agpl-3.0.en.html> for more
  * information.
  ******************************************************************************/
-const config = require('../config/env');
-
-// Paths are all relative to this JS file.
-module.exports = {
-	client: 'sqlite3',
-	connection: {
-		filename: config.database_file,
-	},
-	migrations: {
-		directory: './migrations',
-	},
-	useNullAsDefault: true,
-};
+// @ts-expect-error Knex needs this to be a JS file. We only use it here.
+import knexfile from './knexfile';
+import setupKnex from 'knex';
+const knex = setupKnex(knexfile);
+export default knex;

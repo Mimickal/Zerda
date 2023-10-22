@@ -17,12 +17,7 @@ import { detail, GlobalLogger, loginMsg } from '@mimickal/discord-logging';
 
 import commands from './commands';
 import * as database from './database';
-import {
-	checkAllGuilds,
-	assignRole,
-	createPlayingRole,
-	assignRoleAllMembers,
-} from './role';
+import { checkAllGuilds, assignRole, assignRoleAllMembers } from './role';
 
 const logger = GlobalLogger.logger;
 
@@ -69,7 +64,6 @@ export async function onGuildJoin(guild: Guild): Promise<void> {
 		clientMember.permissions.bitfield
 	}`);
 
-	await createPlayingRole(guild);
 	await assignRoleAllMembers(guild);
 }
 

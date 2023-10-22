@@ -37,10 +37,10 @@ interface GuildCache {
 }
 
 /**
- * Applies {@link assignRoleAllMembers} and {@link createPlayingRole} to every
- * Guild and GuildMember this bot can see. We do one Guild at a time, which
- * combined with Discord's rate limit can make this operation take some time to
- * complete.
+ * Applies {@link assignRoleAllMembers} and {@link getOrCreatePlayingRole} to
+ * every Guild and GuildMember this bot can see. We do one Guild at a time,
+ * which combined with Discord's rate limit can make this operation take some
+ * time to complete.
  */
 export async function checkAllGuilds(client: Client): Promise<void> {
 	logger.info('Beginning initial check...');
@@ -52,7 +52,7 @@ export async function checkAllGuilds(client: Client): Promise<void> {
 		guildCount++;
 
 		const progress = `(${guildCount}/${client.guilds.cache.size})`;
-		const role = await createPlayingRole(guild);
+		const role = await getOrCreatePlayingRole(guild);
 		const apps = new Set(await database.getAppsInServer(guild.id));
 
 		const count = await assignRoleAllMembers(guild, { apps, progress, role });
@@ -65,37 +65,6 @@ export async function checkAllGuilds(client: Client): Promise<void> {
 		`Finished initial check - ${memberCount} members ` +
 		`across ${guildCount} guilds in ${timeTaken} ms`
 	);
-}
-
-/**
- * Creates the {@link ROLE_NAME} role in the given Guild, if it doesn't already
- * exist.
- *
- * @returns the role.
- */
-export async function createPlayingRole(guild: Guild): Promise<Role | undefined> {
-	let role = await getPlayingRole(guild);
-	if (role) {
-		logger.debug(`${detail(guild)} already has ${detail(role)}`);
-		return role;
-	}
-
-	try {
-		role = await guild.roles.create({
-			hoist: true, // VERY IMPORTANT! This bot doesn't work without this!
-			name: ROLE_NAME,
-			permissions: new PermissionsBitField(),
-			position: 0,
-			reason: 'Role for people currently playing',
-		});
-
-		logger.info(`Created ${detail(role)} in ${detail(guild)}`);
-	} catch (err) {
-		logger.warn(`Error creating Role "${ROLE_NAME}" in ${detail(guild)}`, err);
-		// TODO probably message guild owner
-	}
-
-	return role;
 }
 
 /**
@@ -113,7 +82,7 @@ export async function assignRoleAllMembers(
 	logger.info(`Beginning member check in ${detail(guild)} ${progress}`);
 	const startTime = Date.now();
 
-	const role = cache?.role ?? await getPlayingRole(guild);
+	const role = cache?.role ?? await getOrCreatePlayingRole(guild);
 	const apps = cache?.apps ?? new Set(await database.getAppsInServer(guild.id));
 
 	// Apparently Discord.js really will just fetch thousands of members at once.
@@ -148,7 +117,7 @@ export async function assignRoleAllMembers(
  * GuildMember, as applicable.
  */
 export async function assignRole(member: GuildMember, cache?: GuildCache): Promise<void> {
-	const role = cache?.role ?? await getPlayingRole(member.guild);
+	const role = cache?.role ?? await getOrCreatePlayingRole(member.guild);
 
 	try {
 		if (await shouldAssignRole(member, cache?.apps)) {
@@ -185,7 +154,7 @@ async function shouldAssignRole(member: GuildMember, apps?: Set<Snowflake>): Pro
  * This function is effectively a no-op if the member already has the role.
  */
 async function addRole(member: GuildMember, cachedRole?: Role): Promise<void> {
-	const role = cachedRole ?? await getPlayingRole(member.guild);
+	const role = cachedRole ?? await getOrCreatePlayingRole(member.guild);
 
 	if (!role) {
 		return; // TODO handle this better
@@ -210,7 +179,7 @@ async function addRole(member: GuildMember, cachedRole?: Role): Promise<void> {
  * This function is effectively a no-op if the member does not have the role.
  */
 async function removeRole(member: GuildMember, cachedRole?: Role): Promise<void> {
-	const role = cachedRole ?? await getPlayingRole(member.guild);
+	const role = cachedRole ?? await getOrCreatePlayingRole(member.guild);
 
 	if (!role) {
 		return; // TODO handle this better
@@ -229,10 +198,10 @@ async function removeRole(member: GuildMember, cachedRole?: Role): Promise<void>
 }
 
 /**
- * Returns the {@link ROLE_NAME} role for the given Guild, if it has one.
- * Can return `undefined` if we cannot find the role even after an API fetch.
+ * Returns the {@link ROLE_NAME} role for the given Guild. This will trigger
+ * a fetch from the API. If the role can't be found, it will be created.
  */
-async function getPlayingRole(guild: Guild): Promise<Role | undefined> {
+async function getOrCreatePlayingRole(guild: Guild): Promise<Role | undefined> {
 	await guild.roles.fetch();
 	const role = guild.roles.cache.find(role => role.name === ROLE_NAME);
 
@@ -240,11 +209,20 @@ async function getPlayingRole(guild: Guild): Promise<Role | undefined> {
 		return role;
 	}
 
-	// TODO what happens if we can't find this role?
-	// Make this function take a "expect_Missing" field for first-time running
+	try {
+		const new_role = await guild.roles.create({
+			hoist: true, // VERY IMPORTANT! This bot doesn't work without this!
+			name: ROLE_NAME,
+			permissions: new PermissionsBitField(),
+			position: 0,
+			reason: 'Role for people currently playing',
+		});
 
-	logger.warn(
-		`Failed to find "${ROLE_NAME}" role in ${detail(guild)}.`
-		+ ' The role may have been deleted or renamed.'
-	);
+		logger.info(`Created ${detail(new_role)} in ${detail(guild)}`);
+
+		return new_role;
+	} catch (err) {
+		logger.warn(`Error creating Role "${ROLE_NAME}" in ${detail(guild)}`, err);
+		// TODO probably message guild owner
+	}
 }

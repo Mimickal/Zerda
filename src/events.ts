@@ -18,9 +18,8 @@ import { detail, GlobalLogger, loginMsg } from '@mimickal/discord-logging';
 import commands from './commands';
 import * as database from './database';
 import {
-	assignRoleAllGuilds,
+	checkAllGuilds,
 	assignRole,
-	createPlayingRoleAllGuilds,
 	createPlayingRole,
 	assignRoleAllMembers,
 } from './role';
@@ -39,8 +38,7 @@ export async function onReady(client: Client): Promise<void> {
 	logger.info(loginMsg(client.user));
 
 	// TODO catch error if we don't have permissions
-	await createPlayingRoleAllGuilds(client);
-	await assignRoleAllGuilds(client);
+	await checkAllGuilds(client);
 }
 
 /**

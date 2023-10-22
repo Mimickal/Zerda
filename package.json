@@ -1,6 +1,6 @@
 {
   "name": "zerda",
-  "version": "1.0.0-dev",
+  "version": "1.0.0",
   "private": true,
   "description": "I am a Discord bot that assigns a role to people who are playing a game, so they sort higher in the member list.",
   "main": "src/main.ts",

@@ -58,10 +58,16 @@ all traces of the bot in your server.
 (and will create another role).
 - The bot's role needs to be sorted above the "Currently Playing" role, or it
 will not be allowed to assign the role.
+- Zerda makes a lot of noise in your server's audit log. Every time it adds or
+  removes the a role, it makes a new entry in the log. You can filter events
+  by user and by action type, so this isn't a *huge* problem, but it's worth
+  calling out up front.
 
 ## Commands
 
-This bot uses slash commands exclusively.
+This bot uses slash commands exclusively. You need to use `/app get` to get a
+game's application ID from a user's current activities, because Discord does not
+have a public list of this info, for some reason.
 
 - **Get a user's activities (including applications)**
   - `/app get [user: <User ID here>]`

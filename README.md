@@ -1,7 +1,7 @@
 # Zerda
 
 <a href="LICENSE.md"><img align="right" alt="AGPL-3.0 Logo"
-src="https://www.gnu.org/graphics/agplv3-155x51.png">
+src="https://www.gnu.org/graphics/agplv3-155x51.png"/>
 </a>
 
 Zerda is a Discord bot that assigns a temporary role to people playing
@@ -9,6 +9,7 @@ games so that they sort higher in the user list. You can configure which games
 Zerda assigns the playing role for. This will allow people to more easily find
 matches and join each others' matches from Discord.
 
+<img align="right" alt="Zerda Logo" width="128px" src="./docs/fennec.svg"/>
 
 ### [Invite Zerda to your server](https://discord.com/api/oauth2/authorize?client_id=884160015542419457&permissions=268437504&scope=bot%20applications.commands)
 
@@ -79,6 +80,19 @@ have a public list of this info, for some reason.
   - `/app remove application-id: <Discord app ID here>`
 - **List all of the applications being tracked in the server**
   - `/app list`
+
+# Thanks
+
+Thank you to the following Discord users who helped me build and test Zerda:
+
+- conscars (366651903486197770) - Code review
+- shellyherself (119915881680601089) - Code review and testing
+- yu.nie (165225595733671937) - The fennec fox icon
+- iceyembers (153214243754344448) - Testing
+- precutodst (211104510251106304) - Testing
+- All the unsuspecting souls playing Halo games (Infinite, Custom Edition, and
+  The Master Chief Collection) in the "Halo Modding Reclaimers"
+  (228263208299790338) server from October 20 - October 22, 2023.
 
 # Fun facts
 
